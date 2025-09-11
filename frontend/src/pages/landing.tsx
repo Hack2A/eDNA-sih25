@@ -1,4 +1,3 @@
-import React from 'react'
 import heroBg from '../assets/stocks/hero-bg.png'
 
 import about1 from '../assets/stocks/about1.png'

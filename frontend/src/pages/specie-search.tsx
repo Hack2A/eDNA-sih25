@@ -1,4 +1,3 @@
-import React from 'react'
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import SpeciesCard from '../components/search-specie/specie-card'
 import SummaryCard from '../components/search-specie/summary-card';

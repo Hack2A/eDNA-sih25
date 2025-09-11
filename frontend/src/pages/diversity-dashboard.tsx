@@ -1,4 +1,3 @@
-import React from 'react'
 import EarthGlobe from '../components/diversity-globe/3d-globe'
 
 const DiversityDashboard = () => {

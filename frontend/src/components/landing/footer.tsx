@@ -1,5 +1,3 @@
-import React from 'react'
-
 const Footer = () => {
     return (
         <footer className='w-full flex flex-col items-center justify-center text-[#8FB8CC]'>
@@ -8,7 +6,7 @@ const Footer = () => {
                 <a href='/'>Terms of Service</a>
             </p>
 
-            <span>&copy;2025 AquaScan. All rights reserved.</span>
+            <span>&copy;2025 AquaGenesis. All rights reserved.</span>
         </footer>
     )
 }
