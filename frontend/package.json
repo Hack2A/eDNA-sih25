@@ -1,43 +1,45 @@
 {
-  "name": "frontend",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "@heroicons/react": "^2.2.0",
-    "@react-three/drei": "^10.7.5",
-    "@react-three/fiber": "^9.3.0",
-    "@tailwindcss/vite": "^4.1.13",
-    "axios": "^1.11.0",
-    "d3-geo": "^3.1.1",
-    "framer-motion": "^12.23.12",
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1",
-    "react-globe.gl": "^2.36.0",
-    "react-hook-form": "^7.62.0",
-    "react-router-dom": "^7.8.2",
-    "tailwindcss": "^4.1.13",
-    "three": "^0.180.0",
-    "topojson-client": "^3.1.0"
-  },
-  "devDependencies": {
-    "@eslint/js": "^9.33.0",
-    "@types/react": "^19.1.10",
-    "@types/react-dom": "^19.1.7",
-    "@types/three": "^0.180.0",
-    "@vitejs/plugin-react": "^5.0.0",
-    "eslint": "^9.33.0",
-    "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-react-refresh": "^0.4.20",
-    "globals": "^16.3.0",
-    "typescript": "~5.8.3",
-    "typescript-eslint": "^8.39.1",
-    "vite": "^7.1.2"
-  }
+	"name": "frontend",
+	"private": true,
+	"version": "0.0.0",
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"build": "tsc -b && vite build",
+		"lint": "eslint .",
+		"preview": "vite preview"
+	},
+	"dependencies": {
+		"@heroicons/react": "^2.2.0",
+		"@react-three/drei": "^10.7.5",
+		"@react-three/fiber": "^9.3.0",
+		"@tailwindcss/vite": "^4.1.13",
+		"axios": "^1.11.0",
+		"d3-geo": "^3.1.1",
+		"framer-motion": "^12.23.12",
+		"react": "^19.1.1",
+		"react-dom": "^19.1.1",
+		"react-globe.gl": "^2.36.0",
+		"react-hook-form": "^7.62.0",
+		"react-router-dom": "^7.8.2",
+		"tailwindcss": "^4.1.13",
+		"three": "^0.180.0",
+		"topojson-client": "^3.1.0"
+	},
+	"devDependencies": {
+		"@eslint/js": "^9.33.0",
+		"@types/react": "^19.1.10",
+		"@types/react-dom": "^19.1.7",
+		"@types/three": "^0.180.0",
+		"@vitejs/plugin-react": "^5.0.0",
+		"eslint": "^9.33.0",
+		"eslint-plugin-react-hooks": "^5.2.0",
+		"eslint-plugin-react-refresh": "^0.4.20",
+		"globals": "^16.3.0",
+		"typescript": "~5.8.3",
+		"typescript-eslint": "^8.39.1",
+		"vite": "^7.1.2",
+		"@types/d3-geo": "^3.1.0",
+		"@types/topojson-client": "^3.1.5"
+	}
 }
