@@ -13,12 +13,12 @@ const Authenticate = () => {
 
     return (
         <div className="w-full min-h-screen bg-[#131E24] text-white flex justify-center items-center">
-            <div className='bg-[#1A2832] p-8 rounded-lg shadow-lg w-full max-w-md'>
+            <div className='bg-white/2 backdrop-blur-sm rounded-[100px] w-full max-w-lg p-20 shadow-white/5 shadow-2xl border border-white/20'>
                 <div className='text-center mb-8'>
-                    <h1 className='text-3xl font-bold mb-2'>
+                    <h1 className='text-4xl font-bold mb-2'>
                         {isLogin ? 'Welcome Back' : 'Create Account'}
                     </h1>
-                    <p className='text-gray-300'>
+                    <p className='text-white/60 -mt-1'>
                         {isLogin
                             ? 'Sign in to your account to continue'
                             : 'Join us to start your eDNA journey'
@@ -65,8 +65,8 @@ const Authenticate = () => {
                     </button>
                 </form>
 
-                <div className='mt-6 text-center'>
-                    <p className='text-gray-300'>
+                <div className='mt-4 text-center'>
+                    <p className='text-white/60 text-sm'>
                         {isLogin ? "Don't have an account? " : "Already have an account? "}
                         <button
                             onClick={() => setIsLogin(!isLogin)}
