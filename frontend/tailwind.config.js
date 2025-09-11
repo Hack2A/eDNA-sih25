@@ -3,6 +3,22 @@ export default {
 	content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
 	theme: {
 		extend: {
+			fontFamily: {
+				"space-grotesk": ["Space Grotesk", "sans-serif"],
+				sans: [
+					"Space Grotesk",
+					"ui-sans-serif",
+					"system-ui",
+					"sans-serif",
+				],
+			},
+			fontWeight: {
+				light: "300",
+				normal: "400",
+				medium: "500",
+				semibold: "600",
+				bold: "700",
+			},
 			colors: {
 				primary: "#131E24",
 				secondary: "#1A2832",
