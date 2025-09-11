@@ -6,7 +6,7 @@ const Footer = () => {
                 <a href='/'>Terms of Service</a>
             </p>
 
-            <span>&copy;2025 AquaScan. All rights reserved.</span>
+            <span>&copy;2025 AquaGenesis. All rights reserved.</span>
         </footer>
     )
 }
