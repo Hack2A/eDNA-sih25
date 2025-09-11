@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { authService } from '../../services/authService'
 
 const Authenticate = () => {
     const [isLogin, setIsLogin] = useState(true)
@@ -9,6 +10,17 @@ const Authenticate = () => {
         e.preventDefault()
         // Handle authentication logic here
         console.log(isLogin ? 'Login' : 'Register', { email, password })
+        if (isLogin) {
+            authService.login({ email, password })
+                .then(response => {
+                    console.log('Login successful:', response.data);
+                    // Handle successful login (e.g., redirect, store token, etc.)
+                })
+                .catch(error => {
+                    console.error('Login error:', error);
+                    // Handle login error (e.g., show error message)
+                });
+        }
     }
 
     return (
