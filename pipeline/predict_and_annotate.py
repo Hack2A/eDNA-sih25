@@ -14,8 +14,9 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 # --- Global Variables & One-Time Setup ---
 # These are initialized once when the application starts, not on every API call.
-PIPELINE_SAVE_PATH = 'eukaryote_classifier_pipeline'
-BLAST_RESULTS_PATH = r'LSU_eukaryote_final_rRNA-blastn.csv'
+PIPELINE_DIR = os.path.dirname(os.path.abspath(__file__))
+PIPELINE_SAVE_PATH = os.path.join(PIPELINE_DIR, 'eukaryote_classifier_pipeline')
+BLAST_RESULTS_PATH = os.path.join(PIPELINE_DIR, 'LSU_eukaryote_final_rRNA-blastn.csv')
 ENTREZ_EMAIL = os.getenv("ENTREZ_EMAIL")
 
 # --- Initialize Pipeline and Databases ---
@@ -280,14 +281,7 @@ def process_prediction_request(request_data: dict):
 
 # --- Example of how to use this script (for testing) ---
 if __name__ == "__main__":
-    # Simulate a 'manual' input API call
-    print("\n--- Simulating Manual Input API Call ---")
-    manual_input = {
-        "file_type": "manual",
-        "data": "AGAGTTTGATCCTGGCTCAGGACGAACGCTGGCGGCGTGCCTAATACATGCAAGTCGAGCGGATGAAGGTTTTCGGATCGGAGTGCTTGCGAAAGGGGAGCGAACAGGATTAGATACCCTGGTAGTCCACGCCGTAAACGATGAGTGCTAGGTGACGGTACCTGAGACACGGCCCAGACTCCTACGGGAGGCAGCAGTGGGGAATATTGGACAATGGGCGAAAGCCTGATGCAGCCATGCCGCGTGTGTGAAGAAGGTCTTCGGATTGTAAAGCACTTTAAGTTGGGAGGAAGGGTACTTACCTAATACGTGAGTATGCGGGACCTTACGGTGTGAGAGGGTTGCCAAGCCGCGAGGTGGAGCTAATCCCATAATGCCGGGGAACGTATTCACCGCGGC"
-    }
-    if loaded_pipeline:
-        response = process_prediction_request(manual_input)
-        print(json.dumps(response, indent=4))
-    else:
-        print("Could not run simulation because pipeline failed to initialize.")
+    # This script is designed to be imported and used via API
+    # Use the process_prediction_request() function with request_data parameter
+    print("This module is designed to be imported and used via API calls.")
+    print("Use process_prediction_request(request_data) function to process sequences.")
