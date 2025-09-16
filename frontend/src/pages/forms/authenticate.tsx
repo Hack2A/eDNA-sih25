@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { authService } from '../../services/authService'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import AquaGenesis from '/icon.png'
 
 const Authenticate = () => {
@@ -8,6 +8,7 @@ const Authenticate = () => {
     const [isLogin, setIsLogin] = useState(true)
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const navigate = useNavigate();
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
@@ -16,7 +17,8 @@ const Authenticate = () => {
         if (isLogin) {
             authService.login({ email, password })
                 .then(response => {
-                    console.log('Login successful:', response.data);
+                    localStorage.setItem('token', response.data.access_token);
+                    navigate('/data-ingest');
                     // Handle successful login (e.g., redirect, store token, etc.)
                 })
                 .catch(error => {
@@ -27,7 +29,8 @@ const Authenticate = () => {
         else {
             authService.register({ email, password })
                 .then(response => {
-                    console.log('Registration successful:', response.data);
+                    localStorage.setItem('token', response.data.access_token);
+                    navigate('/data-ingest');
                     // Handle successful registration (e.g., redirect, store token, etc.)
                 })
                 .catch(error => {
@@ -42,8 +45,11 @@ const Authenticate = () => {
 
             <nav className='px-2 py-1 text-white bg-[#131E24] border-b-1 border-b-gray-500 sticky top-0 w-full'>
                 <div className='flex items-center justify-between w-[90%] mx-auto py-2'>
-                    <NavLink to="/">
+                    <NavLink to="/" className="flex items-center gap-2">
                         <img src={AquaGenesis} alt="Logo" className='w-16 h-16 -my-4' />
+                        {/* <span className='font-bold text-xl'>
+                            AquaGenesis
+                        </span> */}
                     </NavLink>
                     <NavLink to="/" className='font-bold text-xl'>AquaGenesis</NavLink>
                 </div>

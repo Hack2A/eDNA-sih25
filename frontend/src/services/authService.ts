@@ -17,6 +17,23 @@ export const authService = {
 
 	logout: async () => {
 		// TODO: Implement logout functionality
+		localStorage.removeItem("token");
 		return axios.post(`${API_BASE_URL}/auth/logout`);
+	},
+
+	// Check if user is authenticated
+	isAuthenticated: (): boolean => {
+		const token = localStorage.getItem("token");
+		return !!token;
+	},
+
+	// Get stored token
+	getToken: (): string | null => {
+		return localStorage.getItem("token");
+	},
+
+	// Clear stored token
+	clearToken: (): void => {
+		localStorage.removeItem("token");
 	},
 };
