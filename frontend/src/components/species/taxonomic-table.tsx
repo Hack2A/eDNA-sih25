@@ -18,7 +18,14 @@ interface TaxonomicTableProps {
 }
 
 const TaxonomicTable: React.FC<TaxonomicTableProps> = ({ taxonomicLineage, sequenceLength }) => {
-    const fullLineage = Object.values(taxonomicLineage).slice(0, -1).join(' > ')
+    const { kingdom, phylum, class: className, order, family, genus, species } = taxonomicLineage
+    const speciesDisplay = species === 'N/A'
+        ? `${family} ${(taxonomicLineage as any).predicted_genus ?? genus}`
+        : species
+
+    const fullLineage = [kingdom, phylum, className, order, family, genus, speciesDisplay]
+        .filter(Boolean)
+        .join(' > ')
 
     return (
         <div className="flex flex-col gap-4">
@@ -51,7 +58,7 @@ const TaxonomicTable: React.FC<TaxonomicTableProps> = ({ taxonomicLineage, seque
                 </div>
                 <div className="flex justify-between py-2 border-b border-[#154868]">
                     <span className="text-[#9EB0BA]">Sequence Length</span>
-                    <span className="text-white">{sequenceLength} bp</span>
+                    <span className="text-white">{sequenceLength}</span>
                 </div>
             </div>
         </div>

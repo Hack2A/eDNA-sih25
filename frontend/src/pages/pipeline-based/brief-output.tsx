@@ -3,6 +3,8 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import SpecieReportCard from '../../components/landing/species-cards'
 import SummaryCard from '../../components/search-specie/summary-card'
 import { dataRetrievalService } from '../../services/dataRetreiveService'
+import ScatterPlot from '../../components/scatter-plot'
+import ConfidenceBar from '../../components/confidence-bar'
 
 const BriefOutputScreen = () => {
     window.document.title = "Biodiversity Analysis Report | AquaGenesis"
@@ -14,9 +16,6 @@ const BriefOutputScreen = () => {
         // Check if state is present from navigation
         if (location.state && Object.keys(location.state).length > 0) {
             setDataRecord(location.state.response);
-            console.log('====================================');
-            console.log(location.state.response);
-            console.log('====================================');
         } else {
             dataRetrievalService.fetchLastReports()
                 .then(response => {
@@ -29,9 +28,9 @@ const BriefOutputScreen = () => {
         }
     }, [location.state])
 
-    const handleExportPDF = () => {
-        console.log(dataRecord)
-    }
+    // const handleExportPDF = () => {
+    //     console.log(dataRecord)
+    // }
 
     const handleExportJSON = () => {
         if (!dataRecord) {
@@ -63,9 +62,9 @@ const BriefOutputScreen = () => {
         console.log('JSON export completed');
     }
 
-    const handleExportCSV = () => {
-        console.log('Export as CSV clicked')
-    }
+    // const handleExportCSV = () => {
+    //     console.log('Export as CSV clicked')
+    // }
 
     return (
         <div className="w-[80%] flex flex-col justify-center mx-auto text-white my-10 gap-10">
@@ -137,14 +136,12 @@ const BriefOutputScreen = () => {
                             </div>
 
                             <div className='w-1/3 h-80 border border-[#335266] rounded-lg p-3'>
-                                Need to figure out what to put here
+                                <ScatterPlot data={dataRecord?.kingdom_summary || []} />
                             </div>
 
                             <div className='w-1/3 h-80 border border-[#335266] rounded-lg p-3'>
                                 <h3 className="text-md font-medium">Classification Confidence Levels</h3>
-                                <div>
-                                    Need to implement bar graph here
-                                </div>
+                                <ConfidenceBar data={dataRecord?.confidence_summary || { very_high: 0, high: 0, moderate: 0, low: 0, very_low: 0 }} />
                             </div>
                         </div>
                     </div>

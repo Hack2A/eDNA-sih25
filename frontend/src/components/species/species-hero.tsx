@@ -24,10 +24,10 @@ const SpeciesHero: React.FC<SpeciesHeroProps> = ({ commonName, confidence, image
                 {/* Species Info Overlay */}
                 <div className="absolute bottom-0 rounded-lg p-4">
                     <h2 className="text-2xl font-bold text-white">
-                        Common Name: {commonName}
+                        Scientific Name: {commonName}
                     </h2>
                     <p className="text-white">
-                        Confidence Score: {Math.round(confidence * 100)}%
+                        Confidence Score: {(confidence) * 100}%
                     </p>
                 </div>
             </div>

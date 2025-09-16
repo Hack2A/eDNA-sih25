@@ -63,7 +63,7 @@ const SpecieDetails: React.FC<SpecieDetailsProps> = ({ data }) => {
 
             {/* Hero Section */}
             <SpeciesHero
-                commonName={speciesData.predicted_genus}
+                commonName={speciesData.taxonomic_lineage.family + " " + speciesData.predicted_genus}
                 confidence={speciesData.confidence}
             />
 
