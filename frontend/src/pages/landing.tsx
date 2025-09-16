@@ -1,47 +1,65 @@
 import heroBg from '../assets/stocks/hero-bg.png'
 
-import about1 from '../assets/stocks/about1.png'
-import about2 from '../assets/stocks/about2.png'
-import about3 from '../assets/stocks/about3.png'
-import about4 from '../assets/stocks/about4.png'
+import b1 from '../assets/stocks/b1.png'
+import b2 from '../assets/stocks/b2.png'
+import b3 from '../assets/stocks/b3.png'
 
-import AboutCard from '../components/landing/about-cards'
 import Footer from '../components/landing/footer'
+import Section from '../components/landing/section'
+import FeatureCard from '../components/landing/feature-card'
+import BenefitCard from '../components/landing/benefit-card'
+import { ChartBarIcon, Cog6ToothIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
+
+// Data arrays for modular components
+const featuresData = [
+    {
+        id: 1,
+        icon: MagnifyingGlassIcon,
+        title: 'Advanced Species Identification',
+        description: 'Our platform uses cutting-edge AI algorithms to accurately identify species from eDNA samples, even in complex environments.'
+    },
+    {
+        id: 2,
+        icon: ChartBarIcon,
+        title: 'Biodiversity Monitoring',
+        description: 'Track changes in biodiversity over time with our comprehensive monitoring tools, enabling informed conservation decisions.'
+    },
+    {
+        id: 3,
+        icon: Cog6ToothIcon,
+        title: 'Customizable Reporting',
+        description: 'Generate customized reports tailored to your specific needs, with detailed analysis and visualizations of eDNA data.'
+    }
+]
+
+const benefitsData = [
+    {
+        id: 1,
+        image: b1,
+        alt: 'Comprehensive Biodiversity Insights',
+        title: 'Comprehensive Biodiversity Insights',
+        description: 'Gain a holistic understanding of marine ecosystems with detailed species identification, abundance estimation, and ecosystem health monitoring.'
+    },
+    {
+        id: 2,
+        image: b2,
+        alt: 'Rapid and Accurate Analysis',
+        title: 'Rapid and Accurate Analysis',
+        description: 'Our AI-powered platform delivers rapid and accurate eDNA analysis, providing actionable insights in a fraction of the time compared to traditional methods.'
+    },
+    {
+        id: 3,
+        image: b3,
+        alt: 'Empowering Conservation Efforts',
+        title: 'Empowering Conservation Efforts',
+        description: 'Our platform empowers conservationists, researchers, and policymakers with the data needed to make informed decisions and implement effective conservation strategies.'
+    }
+]
 
 const Landing = () => {
-    const aboutCardsData = [
-        {
-            id: 1,
-            image: about1,
-            title: "Revolutionizing Biodiversity Monitoring",
-            description: "Provides unparalleled insights into species distribution and ecosystem health.",
-            bgColor: "bg-blue-800"
-        },
-        {
-            id: 2,
-            image: about2,
-            title: "Novel Species Discovery",
-            description: "Uncover previously unknown species and gain deeper insights into ecosystem dynamics.",
-            bgColor: "bg-green-800"
-        },
-        {
-            id: 3,
-            image: about3,
-            title: "Conservation Insights",
-            description: "Inform conservation efforts with accurate and comprehensive biodiversity data.",
-            bgColor: "bg-orange-800"
-        },
-        {
-            id: 4,
-            image: about4,
-            title: "Non-invasive Sampling",
-            description: "eDNA analysis allows for biodiversity monitoring without disturbing marine life.",
-            bgColor: "bg-purple-800"
-        }
-    ]
 
     return (
-        <div className='w-full min-h-screen bg-[#131E24] text-white py-5 px-10 flex flex-col gap-10'>
+        <div className='w-full min-h-screen bg-[#131E24] text-white flex flex-col gap-10'>
             {/* Hero Section */}
             <section
                 className='relative w-full h-[60vh] flex flex-col justify-center items-center px-8 py-10 bg-cover bg-center bg-no-repeat rounded-lg'
@@ -52,47 +70,59 @@ const Landing = () => {
                 <div className='relative z-10 flex flex-col justify-center items-center h-full text-center space-y-8'>
                     <div className='max-w-4xl'>
                         <h1 className='text-4xl font-bold leading-tight mb-6'>
-                            Discover the Hidden Biodiversity of the Deep Ocean with AI
+                            Unlocking the Secrets of the Ocean's Biodiversity
                         </h1>
                         <p className='text-lg text-gray-200 max-w-3xl mx-auto'>
-                            AI-powered eDNA analysis to uncover species richness and monitor ecosystems.
+                            Our AI-powered eDNA platform provides unprecedented insights into marine life, enabling conservation efforts and sustainable resource management.
                         </p>
                     </div>
 
-                    <div className='flex flex-col sm:flex-row gap-4'>
-                        <button className='px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors duration-200 cursor-pointer'>
-                            Explore Dashboard
-                        </button>
-                        <button className='px-8 py-3 bg-[#213D4A] text-white font-semibold rounded-lg transition-all duration-200 cursor-pointer'>
-                            Learn More
-                        </button>
-                    </div>
+                    <button
+                        className='px-8 py-3 bg-[#12B5D4] hover:bg-[#1099b4] text-black font-semibold rounded-lg transition-colors duration-200 cursor-pointer'
+                        onClick={() => { window.location.href = '/data-ingest' }}
+                    >
+                        Upload eDNA Data
+                    </button>
                 </div>
             </section>
 
             {/* About eDNA Section */}
-            <section className='w-full flex flex-col justify-center items-center'>
-                <div className='mx-auto space-y-12 px-4'>
-                    <div className=''>
-                        <h2 className='text-3xl font-bold mb-4'>About eDNA</h2>
-                        <p className='text-gray-300 mb-12'>
-                            Environmental DNA (eDNA) analysis is a revolutionary technique that allows us to detect the presence of species in an environment by analyzing traces of their DNA left behind in water samples. This non-invasive method provides unprecedented insights into biodiversity, enabling us to monitor ecosystems with minimal disturbance.
-                        </p>
-                    </div>
-
-                    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-[75%] mx-auto'>
-                        {aboutCardsData.map((card) => (
-                            <AboutCard
-                                key={card.id}
-                                image={card.image}
-                                title={card.title}
-                                description={card.description}
-                                bgColor={card.bgColor}
-                            />
-                        ))}
-                    </div>
+            <Section title="About eDNA">
+                <div className='space-y-12'>
+                    <p className='text-gray-300 bg-[#1A2E33] border border-[#335E66] rounded-lg p-6'>
+                        Environmental DNA (eDNA) analysis is a revolutionary technique that allows us to detect the presence of species in an environment by analyzing traces of their DNA left behind in water samples. This non-invasive method provides unprecedented insights into biodiversity, enabling us to monitor ecosystems with minimal disturbance.
+                    </p>
                 </div>
-            </section>
+            </Section>
+
+            {/* Platform Features Section */}
+            <Section title="Platform Features">
+                <div className='flex gap-4'>
+                    {featuresData.map((feature) => (
+                        <FeatureCard
+                            key={feature.id}
+                            icon={feature.icon}
+                            title={feature.title}
+                            description={feature.description}
+                        />
+                    ))}
+                </div>
+            </Section>
+
+            {/* Benefits of Our Platform Section */}
+            <Section title="Benefits of Our Platform">
+                <div className='flex gap-4'>
+                    {benefitsData.map((benefit) => (
+                        <BenefitCard
+                            key={benefit.id}
+                            image={benefit.image}
+                            alt={benefit.alt}
+                            title={benefit.title}
+                            description={benefit.description}
+                        />
+                    ))}
+                </div>
+            </Section>
 
             <Footer />
         </div>
