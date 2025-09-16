@@ -4,7 +4,7 @@ import { NavLink } from 'react-router-dom'
 import AquaGenesis from '/icon.png'
 
 const Authenticate = () => {
-    window.document.title = "Authenticate - AquaGenesis"
+    window.document.title = "Authenticate | AquaGenesis"
     const [isLogin, setIsLogin] = useState(true)
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')

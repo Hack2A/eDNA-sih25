@@ -8,6 +8,7 @@ import VisualDataScreen from '../pages/pipeline-based/visual-data'
 import DiversityDashboard from '../pages/diversity-dashboard'
 import SpecieSearch from '../pages/specie-search'
 import MainLayout from '../layout/main-layout'
+import SpecieDetails from '../pages/pipeline-based/specie-details'
 
 const AppRoutes = () => {
     return (
@@ -21,7 +22,7 @@ const AppRoutes = () => {
 
                     <Route path="/data-ingest" element={<DataIngestion />} />
                     <Route path="/report" element={<BriefOutputScreen />} />
-                    <Route path="/visual/:specieID" element={<VisualDataScreen />} />
+                    <Route path="/visual/:specieID" element={<SpecieDetails />} />
 
                     <Route path="/diversityglobe" element={<DiversityDashboard />} />
                     <Route path="/search-specie" element={<SpecieSearch />} />

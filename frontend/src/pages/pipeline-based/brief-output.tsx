@@ -2,7 +2,7 @@ import SpecieReportCard from '../../components/landing/species-cards'
 import SummaryCard from '../../components/search-specie/summary-card'
 
 const BriefOutputScreen = () => {
-    window.document.title = "Biodiversity Analysis Report - AquaGenesis"
+    window.document.title = "Biodiversity Analysis Report | AquaGenesis"
 
     const handleExportPDF = () => {
         console.log('Export as PDF clicked')

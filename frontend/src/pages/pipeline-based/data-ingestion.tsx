@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form'
 
 const DataIngestion = () => {
-    window.document.title = "Data Ingestion - AquaGenesis"
+    window.document.title = "Data Ingestion | AquaGenesis"
 
     const { register, handleSubmit, watch, setValue } = useForm({
         defaultValues: {
