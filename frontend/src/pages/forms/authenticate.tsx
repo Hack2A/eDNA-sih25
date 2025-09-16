@@ -4,6 +4,7 @@ import { NavLink } from 'react-router-dom'
 import AquaGenesis from '/icon.png'
 
 const Authenticate = () => {
+    window.document.title = "Authenticate - AquaGenesis"
     const [isLogin, setIsLogin] = useState(true)
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
@@ -94,7 +95,7 @@ const Authenticate = () => {
 
                         <button
                             type='submit'
-                            className='w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors duration-200 cursor-pointer'
+                            className='w-full py-3 bg-[#226FA1] hover:bg-[#1c5c86] text-white font-semibold rounded-lg transition-colors duration-200 cursor-pointer'
                         >
                             {isLogin ? 'Sign In' : 'Create Account'}
                         </button>
@@ -105,7 +106,7 @@ const Authenticate = () => {
                             {isLogin ? "Don't have an account? " : "Already have an account? "}
                             <button
                                 onClick={() => setIsLogin(!isLogin)}
-                                className='text-blue-400 hover:text-blue-300 font-medium underline cursor-pointer'
+                                className='text-[#226FA1] hover:text-[#1b5983] font-medium underline cursor-pointer'
                             >
                                 {isLogin ? 'Register' : 'Sign In'}
                             </button>
