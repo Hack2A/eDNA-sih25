@@ -10,11 +10,7 @@ export const authService = {
 		return axios.post(`${API_BASE_URL}/auth/login`, credentials);
 	},
 
-	register: async (userData: {
-		email: string;
-		password: string;
-		name: string;
-	}) => {
+	register: async (userData: { email: string; password: string }) => {
 		// TODO: Implement register functionality
 		return axios.post(`${API_BASE_URL}/auth/register`, userData);
 	},

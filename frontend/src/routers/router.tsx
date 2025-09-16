@@ -13,11 +13,11 @@ const AppRoutes = () => {
     return (
         <Router>
             <Routes>
+                <Route path="/u/auth" element={<Authenticate />} />
+
                 <Route element={<MainLayout></MainLayout>}>
                     <Route path="/" element={<Landing />} />
                     <Route path="/info" element={<Info />} />
-
-                    <Route path="/u/auth" element={<Authenticate />} />
 
                     <Route path="/data-ingest" element={<DataIngestion />} />
                     <Route path="/data-output" element={<BriefOutputScreen />} />
