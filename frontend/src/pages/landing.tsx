@@ -1,3 +1,4 @@
+
 import heroBg from '../assets/stocks/hero-bg.png'
 
 import b1 from '../assets/stocks/b1.png'
@@ -57,6 +58,7 @@ const benefitsData = [
 ]
 
 const Landing = () => {
+    window.document.title = "AquaGenesis"
 
     return (
         <div className='w-full min-h-screen bg-[#131E24] text-white flex flex-col gap-10'>

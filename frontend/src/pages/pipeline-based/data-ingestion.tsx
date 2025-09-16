@@ -1,7 +1,8 @@
-import React from 'react'
 import { useForm } from 'react-hook-form'
 
 const DataIngestion = () => {
+    window.document.title = "Data Ingestion - AquaGenesis"
+
     const { register, handleSubmit, watch, setValue } = useForm({
         defaultValues: {
             file_type: 'manual',
@@ -27,7 +28,7 @@ const DataIngestion = () => {
     ]
 
     return (
-        <div className="w-[80%] flex flex-col justify-center mx-auto text-white my-10 gap-5">
+        <div className="w-[80%] flex flex-col justify-center mx-auto text-white my-10 gap-10">
 
             {/* Heading Section */}
             <div className="flex flex-col gap-3">
@@ -71,6 +72,7 @@ const DataIngestion = () => {
                             <textarea
                                 {...register('data')}
                                 placeholder="Enter the DNA sequence..."
+                                required
                                 rows={6}
                                 className="w-full h-20 p-4 rounded-lg bg-[#244247] text-white border border-gray-600 resize-vertical"
                             />
@@ -81,6 +83,7 @@ const DataIngestion = () => {
                             <input
                                 type="file"
                                 accept=".txt,.csv,.fasta,.fa"
+                                required
                                 {...register('data')}
                                 className="w-full h-20 p-4 rounded-lg bg-[#244247] text-white border border-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-600 file:text-white file:font-medium hover:file:bg-blue-700"
                             />

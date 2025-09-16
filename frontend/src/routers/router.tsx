@@ -20,7 +20,7 @@ const AppRoutes = () => {
                     <Route path="/info" element={<Info />} />
 
                     <Route path="/data-ingest" element={<DataIngestion />} />
-                    <Route path="/data-output" element={<BriefOutputScreen />} />
+                    <Route path="/report" element={<BriefOutputScreen />} />
                     <Route path="/visual/:specieID" element={<VisualDataScreen />} />
 
                     <Route path="/diversityglobe" element={<DiversityDashboard />} />
