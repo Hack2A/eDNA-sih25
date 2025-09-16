@@ -1,23 +1,23 @@
-from flask import Blueprint, jsonify
-from app import db
+from flask import Flask, Blueprint, request, jsonify
+
+history_bp = Blueprint('history', __name__)
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from app import db
+from ..models.pipeline_result_model import PipelineResult
+from datetime import datetime
 
-from app.models.pipeline_result_model import PipelineResult   # Assuming you have a History model defined
-
-history_bp = Blueprint('history', __name__, url_prefix='/history')
-
-@history_bp.route('/', methods=['GET'])
+@history_bp.route('/history', methods=['GET'])
 @jwt_required()
 def get_history():
     user_id = int(get_jwt_identity())
-    histories = PipelineResult.query.filter_by(user_id=user_id).order_by(PipelineResult.created_at.desc()).all()
-    history_list = [
-        {
-            'id': h.id,
-            'user_id': h.user_id,
-            'created_at': h.created_at.isoformat(),
-            'result_json': h.result_json
-        }
-        for h in histories
-    ]
-    return jsonify(history_list)
+    results = PipelineResult.query.filter_by(user_id=user_id).order_by(PipelineResult.created_at.desc()).all()
+    
+    history = []
+    for result in results:
+        history.append({
+            "id": result.id,
+            "result_json": result.result_json,
+            "created_at": result.created_at.isoformat()
+        })
+    
+    return jsonify({"status": "success", "history": history}), 200
