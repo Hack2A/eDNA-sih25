@@ -34,7 +34,33 @@ const BriefOutputScreen = () => {
     }
 
     const handleExportJSON = () => {
-        console.log('Export as JSON clicked')
+        if (!dataRecord) {
+            console.error('No data available to export');
+            return;
+        }
+
+        // Create a blob with the JSON data
+        const jsonString = JSON.stringify(dataRecord, null, 2);
+        const blob = new Blob([jsonString], { type: 'application/json' });
+
+        // Create a download link
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+
+        // Generate filename with timestamp
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
+        link.download = `biodiversity-analysis-report-${timestamp}.json`;
+
+        // Trigger download
+        document.body.appendChild(link);
+        link.click();
+
+        // Cleanup
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        console.log('JSON export completed');
     }
 
     const handleExportCSV = () => {
