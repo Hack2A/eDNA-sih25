@@ -141,17 +141,17 @@ def read_sequences_from_file(filepath):
 
 def calculate_confidence_summary(prediction_list):
     summary = {
-        "Confident Match (90-100%)": 0, "Likely Match (60-90%)": 0,
-        "Uncertain Match (40-60%)": 0, "Low Confidence (20-40%)": 0,
-        "Very Low Confidence (0-20%)": 0
+        "confident_match": 0, "likely_match": 0,
+        "uncertain_match": 0, "low_confidence": 0,
+        "very_low": 0
     }
     for pred in prediction_list:
         confidence = pred.get('confidence', 0)
-        if confidence >= 0.9: summary["Confident Match (90-100%)"] += 1
-        elif confidence >= 0.6: summary["Likely Match (60-90%)"] += 1
-        elif confidence >= 0.4: summary["Uncertain Match (40-60%)"] += 1
-        elif confidence >= 0.2: summary["Low Confidence (20-40%)"] += 1
-        else: summary["Very Low Confidence (0-20%)"] += 1
+        if confidence >= 0.9: summary["confident_match"] += 1
+        elif confidence >= 0.6: summary["likely_match"] += 1
+        elif confidence >= 0.4: summary["uncertain_match"] += 1
+        elif confidence >= 0.2: summary["low_confidence"] += 1
+        else: summary["very_low"] += 1
     return summary
 
 def calculate_abundance_summary(prediction_list):
