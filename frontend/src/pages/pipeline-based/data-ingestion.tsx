@@ -1,9 +1,10 @@
 import { useForm } from 'react-hook-form'
+import { dataIngestionService } from '../../services/dataIngestionService'
 
 const DataIngestion = () => {
     window.document.title = "Data Ingestion | AquaGenesis"
 
-    const { register, handleSubmit, watch, setValue } = useForm({
+    const { register, handleSubmit, watch } = useForm({
         defaultValues: {
             file_type: 'manual',
             data: ''
@@ -12,11 +13,45 @@ const DataIngestion = () => {
 
     const fileType = watch('file_type')
 
-    const onSubmit = (formData: any) => {
-        console.log({
-            file_type: formData.file_type,
-            data: formData.file_type === 'file' ? formData.data[0] : formData.data
-        })
+    const onSubmit = async (formData: any) => {
+        try {
+            let payload;
+
+            if (formData.file_type === 'file') {
+                // For file uploads, get the actual File object from the FileList
+                const fileList = formData.data as FileList;
+                const file = fileList && fileList[0];
+
+                if (!file) {
+                    console.error('No file selected');
+                    return;
+                }
+
+                payload = {
+                    file_type: 'file',
+                    data: file  // Pass the actual File object
+                };
+            } else {
+                // For manual sequence input
+                payload = {
+                    file_type: 'manual',
+                    data: formData.data  // Pass the sequence string
+                };
+            }
+
+            console.log('Submitting payload:', {
+                file_type: payload.file_type,
+                data: payload.file_type === 'file' ? 'File object: ' + payload.data.name : payload.data
+            });
+
+            const response = await dataIngestionService.submitSequencePayload(payload);
+            console.log('Upload successful:', response.data);
+            // Handle successful upload (e.g., show success message, redirect, etc.)
+
+        } catch (error) {
+            console.error('Upload error:', error);
+            // Handle upload error (e.g., show error message)
+        }
     }
 
     const key_points = [
