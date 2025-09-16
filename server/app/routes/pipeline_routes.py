@@ -1,5 +1,8 @@
 import sys
 import os
+from datetime import datetime
+from app.models.pipeline_result_model import PipelineResult
+from app import db
 
 # Add project root to sys.path
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../'))
@@ -64,6 +67,16 @@ def predict():
                 try:
                     response = process_prediction_request(request_data)
                     response["user_id"] = user_id  # Always add user_id to response
+
+                    # Save result to DB
+                    result_entry = PipelineResult(
+                        user_id=user_id,
+                        result_json=response,
+                        created_at=datetime.utcnow()
+                    )
+                    db.session.add(result_entry)
+                    db.session.commit()
+
                     return jsonify(response)
                 finally:
                     if os.path.exists(temp_file_path):
@@ -81,6 +94,16 @@ def predict():
                 }
                 response = process_prediction_request(request_data)
                 response["user_id"] = user_id
+
+                # Save result to DB
+                result_entry = PipelineResult(
+                    user_id=user_id,
+                    result_json=response,
+                    created_at=datetime.utcnow()
+                )
+                db.session.add(result_entry)
+                db.session.commit()
+
                 return jsonify(response)
             else:
                 return jsonify({"status": "error", "message": "Invalid file_type. Must be 'file' or 'manual'"}), 400
@@ -92,6 +115,16 @@ def predict():
             request_data["user_id"] = user_id
             response = process_prediction_request(request_data)
             response["user_id"] = user_id
+
+            # Save result to DB
+            result_entry = PipelineResult(
+                user_id=user_id,
+                result_json=response,
+                created_at=datetime.utcnow()
+            )
+            db.session.add(result_entry)
+            db.session.commit()
+
             return jsonify(response)
             
     except Exception as e:

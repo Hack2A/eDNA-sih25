@@ -13,7 +13,7 @@ def create_app():
 
     # Import models (needed so SQLAlchemy knows about them)
     from .models.user_model import User  
-
+    from .models.pipeline_result_model import PipelineResult
     with app.app_context():
          db.create_all()   # Create tables if they don’t exist
 
