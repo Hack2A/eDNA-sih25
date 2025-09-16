@@ -8,18 +8,15 @@ from eukaryotic_pipeline import EukaryoticPipeline
 from Bio import Entrez
 from dotenv import load_dotenv
 
-# --- Basic Configuration ---
+
 load_dotenv()
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-# --- Global Variables & One-Time Setup ---
-# These are initialized once when the application starts, not on every API call.
 PIPELINE_DIR = os.path.dirname(os.path.abspath(__file__))
 PIPELINE_SAVE_PATH = os.path.join(PIPELINE_DIR, 'eukaryote_classifier_pipeline')
 BLAST_RESULTS_PATH = os.path.join(PIPELINE_DIR, 'LSU_eukaryote_final_rRNA-blastn.csv')
 ENTREZ_EMAIL = os.getenv("ENTREZ_EMAIL")
 
-# --- Initialize Pipeline and Databases ---
 loaded_pipeline = None
 blast_lookup_db = None
 try:
@@ -28,7 +25,7 @@ try:
     
     if not ENTREZ_EMAIL or "@" not in ENTREZ_EMAIL:
         logging.warning("NCBI Entrez email not configured in .env file. API calls may be throttled.")
-        Entrez.email = "default.email@example.com" # A default to prevent errors
+        Entrez.email = "default.email@example.com"
     else:
         Entrez.email = ENTREZ_EMAIL
 
@@ -40,7 +37,6 @@ try:
 except Exception as e:
     logging.critical(f"FATAL: A critical error occurred during initialization: {e}")
 
-### --- Helper Functions (Unchanged from Original) --- ###
 def get_taxid_from_name(genus_name):
     try:
         Entrez.email = ENTREZ_EMAIL
@@ -170,30 +166,36 @@ def calculate_abundance_summary(prediction_list):
     }
     return summary
 
-def format_json_response(status, metadata=None, predictions=None, input_summary=None, confidence_summary=None, abundance_summary=None, message=None):
+def calculate_kingdom_summary(prediction_list):
+    kingdom_counts = {}
+    for pred in prediction_list:
+        final_decision = pred.get('final_taxonomy')
+        lineage = pred.get('taxonomic_lineage')
+        
+        kingdom = 'Unknown' 
+        if final_decision == "Noise (Outlier)":
+            kingdom = "Outlier"
+        elif lineage and isinstance(lineage, dict):
+            kingdom = lineage.get('kingdom', 'Unknown')
+            
+        kingdom_counts[kingdom] = kingdom_counts.get(kingdom, 0) + 1
+    return kingdom_counts
+
+def format_json_response(status, metadata=None, predictions=None, input_summary=None, confidence_summary=None, abundance_summary=None, kingdom_summary=None, message=None):
     response = {
         "status": status,
         "metadata": metadata or {},
         "input_summary": input_summary or {},
         "confidence_summary": confidence_summary or {},
         "abundance_summary": abundance_summary or {},
+        "kingdom_summary": kingdom_summary or {},
         "predictions": predictions or []
     }
     if message: response["message"] = message
     return json.dumps(response, indent=4)
 
-### --- The Main Processing Function for the API --- ###
-def process_prediction_request(request_data: dict):
-    """
-    Handles a single prediction request.
-    
-    Args:
-        request_data (dict): A dictionary containing the input data.
-                             Expected format: {"file_type": "manual" | "file", "data": "sequence_string" | "path/to/file"}
 
-    Returns:
-        dict: A dictionary containing the full prediction response.
-    """
+def process_prediction_request(request_data: dict):
     if not loaded_pipeline:
         return json.loads(format_json_response(status="error", message="Pipeline is not initialized. Check server logs for errors."))
 
@@ -228,7 +230,6 @@ def process_prediction_request(request_data: dict):
     if not sequences_to_classify:
         return json.loads(format_json_response(status="success", message="No valid sequences were provided to classify."))
 
-    # --- Core Prediction and Annotation Logic ---
     prediction_json = loaded_pipeline.predict(new_sequences=sequences_to_classify)
     prediction_list = json.loads(prediction_json)
     
@@ -256,9 +257,9 @@ def process_prediction_request(request_data: dict):
     
     end_time = time.time()
     
-    # --- Assemble Final Response ---
     confidence_summary = calculate_confidence_summary(prediction_list)
     abundance_summary = calculate_abundance_summary(prediction_list)
+    kingdom_summary = calculate_kingdom_summary(prediction_list)
 
     metadata = {
         "timestamp": datetime.utcnow().isoformat() + "Z",
@@ -272,16 +273,13 @@ def process_prediction_request(request_data: dict):
         predictions=prediction_list,
         input_summary={"sequences_provided": len(sequences_to_classify)},
         confidence_summary=confidence_summary,
-        abundance_summary=abundance_summary
+        abundance_summary=abundance_summary,
+        kingdom_summary=kingdom_summary
     )
     
-    # Return a dictionary, as the web framework will handle the final conversion to JSON.
     return json.loads(final_response_json_str)
 
-
-# --- Example of how to use this script (for testing) ---
 if __name__ == "__main__":
-    # This script is designed to be imported and used via API
-    # Use the process_prediction_request() function with request_data parameter
     print("This module is designed to be imported and used via API calls.")
     print("Use process_prediction_request(request_data) function to process sequences.")
+
