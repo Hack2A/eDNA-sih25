@@ -22,7 +22,6 @@ const TaxonomicTable: React.FC<TaxonomicTableProps> = ({ taxonomicLineage, seque
     const speciesDisplay = species === 'N/A'
         ? `${family} ${(taxonomicLineage as any).predicted_genus ?? genus}`
         : species
-
     const fullLineage = [kingdom, phylum, className, order, family, genus, speciesDisplay]
         .filter(Boolean)
         .join(' > ')

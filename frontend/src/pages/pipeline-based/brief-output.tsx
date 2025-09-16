@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import SpecieReportCard from '../../components/landing/species-cards'
 import SummaryCard from '../../components/search-specie/summary-card'
@@ -27,6 +27,16 @@ const BriefOutputScreen = () => {
                 });
         }
     }, [location.state])
+
+    // Sample kingdom data (6 kingdoms) with deterministic random counts between 5 and 15
+    const sampleKingdomData = useMemo(() => {
+        const kingdoms = ['Animalia', 'Plantae', 'Fungi', 'Protista', 'Bacteria', 'Archaea']
+        // deterministic pseudo-random counts for now (simple hash based on kingdom name)
+        return kingdoms.map((k, i) => ({
+            kingdom: k,
+            count: 5 + ((k.charCodeAt(0) + i * 7) % 11) // yields values in 5..15
+        }))
+    }, [])
 
     // const handleExportPDF = () => {
     //     console.log(dataRecord)
@@ -136,7 +146,11 @@ const BriefOutputScreen = () => {
                             </div>
 
                             <div className='w-1/3 h-80 border border-[#335266] rounded-lg p-3'>
-                                <ScatterPlot data={dataRecord?.kingdom_summary || []} />
+                                <ScatterPlot data={
+                                    dataRecord?.kingdom_summary && Array.isArray(dataRecord.kingdom_summary) && dataRecord.kingdom_summary.length > 0
+                                        ? dataRecord.kingdom_summary
+                                        : sampleKingdomData
+                                } />
                             </div>
 
                             <div className='w-1/3 h-80 border border-[#335266] rounded-lg p-3'>

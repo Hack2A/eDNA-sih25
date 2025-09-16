@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import SpeciesHero from '../../components/species/species-hero'
 import TaxonomicTable from '../../components/species/taxonomic-table'
@@ -32,6 +32,11 @@ interface SpecieDetailsProps {
 const SpecieDetails: React.FC<SpecieDetailsProps> = ({ data }) => {
     const location = useLocation()
     const routerData = location.state?.s || location.state?.specieData
+
+    // Scroll to top when this page mounts or when the location changes
+    useEffect(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior })
+    }, [location.pathname, location.key])
 
     window.document.title = `${routerData?.final_taxonomy || data?.final_taxonomy} | AquaGenesis`
     // Sample data for testing - will be replaced by props
@@ -74,10 +79,10 @@ const SpecieDetails: React.FC<SpecieDetailsProps> = ({ data }) => {
             />
 
             {/* Overall Details */}
-            <OverallDetails
+            {/* <OverallDetails
                 genus={speciesData.predicted_genus}
                 classificationType={speciesData.classification_type}
-            />
+            /> */}
         </div>
     )
 }
