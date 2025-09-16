@@ -10,7 +10,7 @@ const SummaryCard = (props: SummaryCardProps) => {
     return (
         <div className='bg-[#226FA1] p-4 rounded-lg '>
             <h2 className='text-lg font-bold mb-2'>{props.title}</h2>
-            <p className='text-sm text-white'>{props.content}</p>
+            <p className='text-white'>{props.content}</p>
         </div>
     )
 }

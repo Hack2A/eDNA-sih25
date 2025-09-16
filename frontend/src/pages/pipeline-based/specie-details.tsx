@@ -1,4 +1,5 @@
 import React from 'react'
+import { useLocation } from 'react-router-dom'
 import SpeciesHero from '../../components/species/species-hero'
 import TaxonomicTable from '../../components/species/taxonomic-table'
 import OverallDetails from '../../components/species/overall-details'
@@ -21,7 +22,7 @@ interface SpeciesData {
     confidence: number
     taxonomic_lineage: TaxonomicLineage
     sequence_length: number
-    classification_type: string
+    classification_type: any
 }
 
 interface SpecieDetailsProps {
@@ -29,7 +30,10 @@ interface SpecieDetailsProps {
 }
 
 const SpecieDetails: React.FC<SpecieDetailsProps> = ({ data }) => {
-    window.document.title = "Specie Details | AquaGenesis"
+    const location = useLocation()
+    const routerData = location.state?.s || location.state?.specieData
+
+    window.document.title = `${routerData?.final_taxonomy || data?.final_taxonomy} | AquaGenesis`
     // Sample data for testing - will be replaced by props
     const sampleData: SpeciesData = {
         sequence: "AGAGTTTGATCCTGGCTCAGGACGAACGCTGGCGGCGTGCCTAATACATGCAAGTCGAGCGGATGAAGGTTTTCGGATCGGAGTGCTTGCGAAAGGGGAGCGAACAGGATTAGATACCCTGGTAGTCCACGCCGTAAACGATGAGTGCTAGGTGACGGTACCTGAGACACGGCCCAGACTCCTACGGGAGGCAGCAGTGGGGAATATTGGACAATGGGCGAAAGCCTGATGCAGCCATGCCGCGTGTGTGAAGAAGGTCTTCGGATTGTAAAGCACTTTAAGTTGGGAGGAAGGGTACTTACCTAATACGTGAGTATGCGGGACCTTACGGTGTGAGAGGGTTGCCAAGCCGCGAGGTGGAGCTAATCCCATAATGCCGGGGAACGTATTCACCGCGGC",
@@ -50,7 +54,7 @@ const SpecieDetails: React.FC<SpecieDetailsProps> = ({ data }) => {
         classification_type: "Confident Match"
     }
 
-    const speciesData = data || sampleData
+    const speciesData = routerData || data || sampleData
 
     return (
         <div className="w-[80%] flex flex-col mx-auto text-white my-10 gap-8">

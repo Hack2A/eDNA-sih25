@@ -2,10 +2,11 @@ import { useForm } from 'react-hook-form'
 import { dataIngestionService } from '../../services/dataIngestionService'
 import { useState, useEffect } from 'react'
 import LoadingPage from '../../components/loading-page'
+import { useNavigate } from 'react-router-dom'
 
 const DataIngestion = () => {
     window.document.title = "Data Ingestion | AquaGenesis"
-
+    const naviagte = useNavigate();
     const [loading, setLoading] = useState<boolean>(false)
 
     // Prevent page scrolling when loading
@@ -69,6 +70,7 @@ const DataIngestion = () => {
 
             const response = await dataIngestionService.submitSequencePayload(payload);
             console.log('Upload successful:', response.data);
+            naviagte('/report', { state: { response: response.data } });
             // Handle successful upload (e.g., show success message, redirect, etc.)
             setLoading(false) // Stop loading on success
 
