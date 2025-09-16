@@ -33,34 +33,37 @@ const ScatterPlot: React.FC<ScatterPlotProps> = ({ data }) => {
 
     // Calculate dimensions and scaling
     const maxCount = Math.max(...input.map(item => item.count))
-    const padding = { top: 20, right: 20, bottom: 60, left: 50 }
-    const chartWidth = 400
-    const chartHeight = 250
+    const padding = { top: 30, right: 30, bottom: 80, left: 60 }
+    const chartWidth = 480
+    const chartHeight = 300
     const plotWidth = chartWidth - padding.left - padding.right
     const plotHeight = chartHeight - padding.top - padding.bottom
 
-    // Create data points
+    // Create data points with better spacing
     const points = input.map((item, index) => {
-        const x = padding.left + (index * plotWidth) / (input.length - 1 || 1)
-        const y = padding.top + plotHeight - (item.count / maxCount) * plotHeight
+        // Spread points evenly across the width
+        const x = padding.left + (index * plotWidth) / Math.max(input.length - 1, 1)
+        // Use full height range, ensuring points don't go below minimum
+        const y = padding.top + plotHeight - (item.count / maxCount) * plotHeight * 0.9 // Use 90% of height for better spacing
         const kingdom = item.kingdom_name || item.kingdom || `Kingdom ${index + 1}`
 
         return { x, y, count: item.count, kingdom }
     })
 
     return (
-        <div className="w-full h-full text-white">
-            <div className="mb-3">
+        <div className="w-full h-full flex flex-col text-white">
+            <div className="mb-2 flex-shrink-0">
                 <h3 className="text-md font-medium text-white">Kingdom Distribution</h3>
                 <p className="text-xs text-gray-400">Species count across different biological kingdoms</p>
             </div>
 
-            <div className="w-full h-[calc(100%-2rem)]">
+            <div className="flex-1 min-h-0 w-full">
                 <svg
                     width="100%"
                     height="100%"
                     viewBox={`0 0 ${chartWidth} ${chartHeight}`}
-                    className="overflow-visible"
+                    className="w-full h-full"
+                    preserveAspectRatio="xMidYMid meet"
                 >
                     {/* Background */}
                     <rect
@@ -114,7 +117,7 @@ const ScatterPlot: React.FC<ScatterPlotProps> = ({ data }) => {
                             <circle
                                 cx={point.x}
                                 cy={point.y}
-                                r={3}
+                                r={5}
                                 fill="#3b82f6"
                                 stroke="#60a5fa"
                                 strokeWidth={2}
@@ -124,9 +127,9 @@ const ScatterPlot: React.FC<ScatterPlotProps> = ({ data }) => {
                             {/* Count label above point */}
                             <text
                                 x={point.x}
-                                y={point.y - 15}
+                                y={point.y - 18}
                                 fill="white"
-                                fontSize={12}
+                                fontSize={13}
                                 fontWeight="600"
                                 textAnchor="middle"
                             >
@@ -136,9 +139,9 @@ const ScatterPlot: React.FC<ScatterPlotProps> = ({ data }) => {
                             {/* Kingdom label below */}
                             <text
                                 x={point.x}
-                                y={chartHeight - padding.bottom + 15}
+                                y={chartHeight - padding.bottom + 20}
                                 fill="#94a3b8"
-                                fontSize={11}
+                                fontSize={12}
                                 textAnchor="middle"
                                 transform={`rotate(-45, ${point.x}, ${chartHeight - padding.bottom + 15})`}
                             >

@@ -10,6 +10,7 @@ import Section from '../components/landing/section'
 import FeatureCard from '../components/landing/feature-card'
 import BenefitCard from '../components/landing/benefit-card'
 import { ChartBarIcon, Cog6ToothIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
+import { useEffect } from 'react'
 
 // Data arrays for modular components
 const featuresData = [
@@ -59,6 +60,10 @@ const benefitsData = [
 
 const Landing = () => {
     window.document.title = "AquaGenesis"
+
+    useEffect(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior })
+    }, [location.pathname])
 
     return (
         <div className='w-full min-h-screen bg-[#131E24] text-white flex flex-col gap-10'>
