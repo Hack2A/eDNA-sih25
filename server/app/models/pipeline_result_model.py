@@ -1,15 +1,12 @@
-from sqlalchemy import Column, Integer, JSON, DateTime
-from sqlalchemy.ext.declarative import declarative_base
+from app.extensions import db
 
-Base = declarative_base()
-
-class PipelineResult(Base):
+class PipelineResult(db.Model):
     __tablename__ = 'pipeline_results'
 
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, nullable=False)
-    result_json = Column(JSON, nullable=False)
-    created_at = Column(DateTime, nullable=False)
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, nullable=False)
+    result_json = db.Column(db.JSON, nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False)
 
     def __init__(self, user_id, result_json, created_at):
         self.user_id = user_id
