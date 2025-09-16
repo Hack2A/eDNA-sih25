@@ -9,7 +9,7 @@ import { authService } from "./authService";
 // Create axios instance with base configuration
 const apiClient: AxiosInstance = axios.create({
 	baseURL: "/api", // Proxied to actual API in dev mode
-	timeout: 10000, // 10 seconds timeout
+	timeout: 120000, // 2 minutes timeout for file uploads and ML processing
 	headers: {
 		"Content-Type": "application/json",
 	},

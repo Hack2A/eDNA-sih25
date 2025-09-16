@@ -1,8 +1,28 @@
 import { useForm } from 'react-hook-form'
 import { dataIngestionService } from '../../services/dataIngestionService'
+import { useState, useEffect } from 'react'
+import LoadingPage from '../../components/loading-page'
 
 const DataIngestion = () => {
     window.document.title = "Data Ingestion | AquaGenesis"
+
+    const [loading, setLoading] = useState<boolean>(false)
+
+    // Prevent page scrolling when loading
+    useEffect(() => {
+        if (loading) {
+            // Store original overflow style
+            const originalStyle = window.getComputedStyle(document.body).overflow
+
+            // Disable scrolling
+            document.body.style.overflow = 'hidden'
+
+            // Cleanup function to restore scrolling
+            return () => {
+                document.body.style.overflow = originalStyle
+            }
+        }
+    }, [loading])
 
     const { register, handleSubmit, watch } = useForm({
         defaultValues: {
@@ -15,6 +35,8 @@ const DataIngestion = () => {
 
     const onSubmit = async (formData: any) => {
         try {
+            setLoading(true) // Start loading
+
             let payload;
 
             if (formData.file_type === 'file') {
@@ -24,6 +46,7 @@ const DataIngestion = () => {
 
                 if (!file) {
                     console.error('No file selected');
+                    setLoading(false) // Stop loading on error
                     return;
                 }
 
@@ -47,10 +70,12 @@ const DataIngestion = () => {
             const response = await dataIngestionService.submitSequencePayload(payload);
             console.log('Upload successful:', response.data);
             // Handle successful upload (e.g., show success message, redirect, etc.)
+            setLoading(false) // Stop loading on success
 
         } catch (error) {
             console.error('Upload error:', error);
             // Handle upload error (e.g., show error message)
+            setLoading(false) // Stop loading on error
         }
     }
 
@@ -63,110 +88,116 @@ const DataIngestion = () => {
     ]
 
     return (
-        <div className="w-[80%] flex flex-col justify-center mx-auto text-white my-10 gap-10">
+        <>
+            {loading && (
+                <LoadingPage />
+            )}
+            <div className="w-[80%] flex flex-col justify-center mx-auto text-white my-10 gap-10">
 
-            {/* Heading Section */}
-            <div className="flex flex-col gap-3">
-                <h1 className="text-3xl font-bold">Data Ingestion - Upload and Process eDNA Sequences</h1>
-                <span className="text-sm">
-                    Ingesting your eDNA sequences is the first step towards unlocking the biodiversity insights hidden within your samples. Our platform streamlines this process, allowing you to upload raw eDNA sequences for AI-driven processing. Simply upload your files or input sequences manually, and let our algorithms handle the rest.
-                </span>
-            </div>
+                {/* Heading Section */}
+                <div className="flex flex-col gap-3">
+                    <h1 className="text-3xl font-bold">Data Ingestion - Upload and Process eDNA Sequences</h1>
+                    <span className="text-sm">
+                        Ingesting your eDNA sequences is the first step towards unlocking the biodiversity insights hidden within your samples. Our platform streamlines this process, allowing you to upload raw eDNA sequences for AI-driven processing. Simply upload your files or input sequences manually, and let our algorithms handle the rest.
+                    </span>
+                </div>
 
-            {/* File Upload Section */}
-            <div className="flex flex-col gap-6">
-                <h2 className="text-xl font-bold">Input Your Data:</h2>
+                {/* File Upload Section */}
+                <div className="flex flex-col gap-6">
+                    <h2 className="text-xl font-bold">Input Your Data:</h2>
 
-                <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
-                    {/* Radio Button Tabs */}
-                    <div className="flex gap-4">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                                type="radio"
-                                value="manual"
-                                {...register('file_type')}
-                                className="w-4 h-4 text-[#226FA1] bg-gray-100 border-gray-300 focus:ring-[#226FA1]"
-                            />
-                            <span className="text-white font-medium">Enter Manual Sequence</span>
-                        </label>
-                        <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                                type="radio"
-                                value="file"
-                                {...register('file_type')}
-                                className="w-4 h-4 text-[#226FA1] bg-gray-100 border-gray-300 focus:ring-[#226FA1]"
-                            />
-                            <span className="text-white font-medium">Upload a .txt/.csv/.fasta file</span>
-                        </label>
+                    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
+                        {/* Radio Button Tabs */}
+                        <div className="flex gap-4">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                    type="radio"
+                                    value="manual"
+                                    {...register('file_type')}
+                                    className="w-4 h-4 text-[#226FA1] bg-gray-100 border-gray-300 focus:ring-[#226FA1]"
+                                />
+                                <span className="text-white font-medium">Enter Manual Sequence</span>
+                            </label>
+                            <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                    type="radio"
+                                    value="file"
+                                    {...register('file_type')}
+                                    className="w-4 h-4 text-[#226FA1] bg-gray-100 border-gray-300 focus:ring-[#226FA1]"
+                                />
+                                <span className="text-white font-medium">Upload a .txt/.csv/.fasta file</span>
+                            </label>
+                        </div>
+
+                        {/* Conditional Input Section */}
+                        {fileType === 'manual' ? (
+                            <div className="flex flex-col gap-2">
+                                <label className="text-white font-medium">Manual Sequence Input</label>
+                                <textarea
+                                    {...register('data')}
+                                    placeholder="Enter the DNA sequence..."
+                                    required
+                                    rows={6}
+                                    className="w-full h-20 p-4 rounded-lg bg-[#244247] text-white border border-gray-600 resize-vertical"
+                                />
+                            </div>
+                        ) : (
+                            <div className="flex flex-col gap-2">
+                                <label className="text-white font-medium">Upload File</label>
+                                <input
+                                    type="file"
+                                    accept=".txt,.csv,.fasta,.fa"
+                                    required
+                                    {...register('data')}
+                                    className="w-full h-20 p-4 rounded-lg bg-[#244247] text-white border border-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-600 file:text-white file:font-medium hover:file:bg-blue-700"
+                                />
+                            </div>
+                        )}
+
+                        {/* Submit Button */}
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="self-end px-8 py-3 bg-[#226FA1] hover:bg-[#1c5e8a] text-white font-semibold rounded-lg transition-colors duration-200 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                            {loading ? 'Processing...' : 'Submit'}
+                        </button>
+                    </form>
+                </div>
+
+                {/* Key Points Section */}
+                <div className="flex flex-col gap-3">
+                    <h2 className="text-xl font-bold">Key Points</h2>
+
+                    <div>
+                        <h3 className="text-md font-semibold">Confidence Level</h3>
+                        <span className="text-[#9EB0BA]">Our AI algorithms provide a confidence score for each species identification, allowing you to assess the reliability of the results.</span>
+
+                        <ul className='list-none mt-4 space-y-3 text-sm'>
+                            {key_points.map((kp) => (
+                                <li key={kp.label} className='flex items-start gap-3'>
+                                    <span className='mt-2 block w-2 h-2 rounded-full bg-[#9EB0BA] flex-shrink-0' />
+                                    <p className='text-[#9EB0BA]'>
+                                        <span className='text-white font-semibold'>{kp.label}</span>
+                                        <span className='ml-2 text-[#9EB0BA]'>({kp.range}) → {kp.description}</span>
+                                    </p>
+                                </li>
+                            ))}
+                        </ul>
                     </div>
 
-                    {/* Conditional Input Section */}
-                    {fileType === 'manual' ? (
-                        <div className="flex flex-col gap-2">
-                            <label className="text-white font-medium">Manual Sequence Input</label>
-                            <textarea
-                                {...register('data')}
-                                placeholder="Enter the DNA sequence..."
-                                required
-                                rows={6}
-                                className="w-full h-20 p-4 rounded-lg bg-[#244247] text-white border border-gray-600 resize-vertical"
-                            />
-                        </div>
-                    ) : (
-                        <div className="flex flex-col gap-2">
-                            <label className="text-white font-medium">Upload File</label>
-                            <input
-                                type="file"
-                                accept=".txt,.csv,.fasta,.fa"
-                                required
-                                {...register('data')}
-                                className="w-full h-20 p-4 rounded-lg bg-[#244247] text-white border border-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-600 file:text-white file:font-medium hover:file:bg-blue-700"
-                            />
-                        </div>
-                    )}
+                    <div>
+                        <h3 className="text-md font-semibold">Species and Taxonomy Hierarchy</h3>
+                        <span className="text-[#9EB0BA]">Explore the identified species and their taxonomic classification, providing a comprehensive view of the biodiversity in your samples.</span>
+                    </div>
 
-                    {/* Submit Button */}
-                    <button
-                        type="submit"
-                        className="self-end px-8 py-3 bg-[#226FA1] hover:bg-[#1c5e8a] text-white font-semibold rounded-lg transition-colors duration-200 cursor-pointer"
-                    >
-                        Submit
-                    </button>
-                </form>
-            </div>
-
-            {/* Key Points Section */}
-            <div className="flex flex-col gap-3">
-                <h2 className="text-xl font-bold">Key Points</h2>
-
-                <div>
-                    <h3 className="text-md font-semibold">Confidence Level</h3>
-                    <span className="text-[#9EB0BA]">Our AI algorithms provide a confidence score for each species identification, allowing you to assess the reliability of the results.</span>
-
-                    <ul className='list-none mt-4 space-y-3 text-sm'>
-                        {key_points.map((kp) => (
-                            <li key={kp.label} className='flex items-start gap-3'>
-                                <span className='mt-2 block w-2 h-2 rounded-full bg-[#9EB0BA] flex-shrink-0' />
-                                <p className='text-[#9EB0BA]'>
-                                    <span className='text-white font-semibold'>{kp.label}</span>
-                                    <span className='ml-2 text-[#9EB0BA]'>({kp.range}) → {kp.description}</span>
-                                </p>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-
-                <div>
-                    <h3 className="text-md font-semibold">Species and Taxonomy Hierarchy</h3>
-                    <span className="text-[#9EB0BA]">Explore the identified species and their taxonomic classification, providing a comprehensive view of the biodiversity in your samples.</span>
-                </div>
-
-                <div>
-                    <h3 className="text-md font-semibold">Novelty Detection</h3>
-                    <span className="text-[#9EB0BA]">Our platform can identify potentially novel species or sequences, highlighting areas for further investigation and discovery..</span>
+                    <div>
+                        <h3 className="text-md font-semibold">Novelty Detection</h3>
+                        <span className="text-[#9EB0BA]">Our platform can identify potentially novel species or sequences, highlighting areas for further investigation and discovery..</span>
+                    </div>
                 </div>
             </div>
-        </div>
+        </>
     )
 }
 

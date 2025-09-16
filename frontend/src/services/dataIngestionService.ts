@@ -15,6 +15,7 @@ export const dataIngestionService = {
 			headers: {
 				"Content-Type": "multipart/form-data",
 			},
+			timeout: 300000, // 5 minutes for file uploads and ML processing
 		});
 	},
 
@@ -25,11 +26,17 @@ export const dataIngestionService = {
 
 	// Upload sequence data
 	uploadSequence: async (sequenceData: string, format: string = "fasta") => {
-		return apiClient.post("/predict", {
-			file_type: "manual",
-			data: sequenceData,
-			format,
-		});
+		return apiClient.post(
+			"/predict",
+			{
+				file_type: "manual",
+				data: sequenceData,
+				format,
+			},
+			{
+				timeout: 300000, // 5 minutes for ML processing
+			}
+		);
 	},
 
 	// Legacy method for FormData uploads
