@@ -179,7 +179,8 @@ def calculate_kingdom_summary(prediction_list):
             kingdom = lineage.get('kingdom', 'Unknown')
             
         kingdom_counts[kingdom] = kingdom_counts.get(kingdom, 0) + 1
-    return kingdom_counts
+    summary_list = [{"kingdom": key, "count": value} for key, value in kingdom_counts.items()]
+    return summary_list
 
 def format_json_response(status, metadata=None, predictions=None, input_summary=None, confidence_summary=None, abundance_summary=None, kingdom_summary=None, message=None):
     response = {
