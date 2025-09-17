@@ -5,24 +5,24 @@ import TaxonomicTable from '../../components/species/taxonomic-table'
 import OverallDetails from '../../components/species/overall-details'
 
 interface TaxonomicLineage {
-    kingdom: string
-    phylum: string
-    class: string
-    order: string
-    family: string
-    genus: string
-    species: string
-    ncbi_taxonomy_link: string
+    kingdom?: string
+    phylum?: string
+    class?: string
+    order?: string
+    family?: string
+    genus?: string
+    species?: string
+    ncbi_taxonomy_link?: string
 }
 
 interface SpeciesData {
-    sequence: string
-    predicted_genus: string
-    final_taxonomy: string
-    confidence: number
-    taxonomic_lineage: TaxonomicLineage
-    sequence_length: number
-    classification_type: any
+    sequence?: string
+    predicted_genus?: string
+    final_taxonomy?: string
+    confidence?: number
+    taxonomic_lineage?: TaxonomicLineage
+    sequence_length?: number
+    classification_type?: any
 }
 
 interface SpecieDetailsProps {
@@ -38,7 +38,34 @@ const SpecieDetails: React.FC<SpecieDetailsProps> = ({ data }) => {
         window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior })
     }, [location.pathname, location.key])
 
-    window.document.title = `${routerData?.final_taxonomy || data?.final_taxonomy} | AquaGenesis`
+    // Handle cases where no data is available at all
+    if (!routerData && !data) {
+        return (
+            <div className="w-[80%] flex flex-col mx-auto text-white my-10 gap-8">
+                <h1 className="text-3xl font-bold">Species Details</h1>
+                <div className="flex flex-col items-center justify-center py-20 gap-4">
+                    <div className="text-2xl font-semibold text-gray-400">No species data available</div>
+                    <div className="text-sm text-gray-500">
+                        Please navigate to this page from the species report or provide valid species data.
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    const speciesData = routerData || data || {}
+
+    // Safe extraction with fallbacks
+    const safeSpeciesData = {
+        final_taxonomy: speciesData?.final_taxonomy || 'Unknown Species',
+        predicted_genus: speciesData?.predicted_genus || 'Unknown',
+        confidence: speciesData?.confidence ?? 0,
+        taxonomic_lineage: speciesData?.taxonomic_lineage || {},
+        sequence_length: speciesData?.sequence_length || null,
+        classification_type: speciesData?.classification_type || 'Unknown'
+    }
+
+    window.document.title = `${safeSpeciesData.final_taxonomy} | AquaGenesis`
     // Sample data for testing - will be replaced by props
     const sampleData: SpeciesData = {
         sequence: "AGAGTTTGATCCTGGCTCAGGACGAACGCTGGCGGCGTGCCTAATACATGCAAGTCGAGCGGATGAAGGTTTTCGGATCGGAGTGCTTGCGAAAGGGGAGCGAACAGGATTAGATACCCTGGTAGTCCACGCCGTAAACGATGAGTGCTAGGTGACGGTACCTGAGACACGGCCCAGACTCCTACGGGAGGCAGCAGTGGGGAATATTGGACAATGGGCGAAAGCCTGATGCAGCCATGCCGCGTGTGTGAAGAAGGTCTTCGGATTGTAAAGCACTTTAAGTTGGGAGGAAGGGTACTTACCTAATACGTGAGTATGCGGGACCTTACGGTGTGAGAGGGTTGCCAAGCCGCGAGGTGGAGCTAATCCCATAATGCCGGGGAACGTATTCACCGCGGC",
@@ -59,8 +86,6 @@ const SpecieDetails: React.FC<SpecieDetailsProps> = ({ data }) => {
         classification_type: "Confident Match"
     }
 
-    const speciesData = routerData || data || sampleData
-
     return (
         <div className="w-[80%] flex flex-col mx-auto text-white my-10 gap-8">
             {/* Page Title */}
@@ -68,20 +93,24 @@ const SpecieDetails: React.FC<SpecieDetailsProps> = ({ data }) => {
 
             {/* Hero Section */}
             <SpeciesHero
-                commonName={speciesData.taxonomic_lineage.family + " " + speciesData.predicted_genus}
-                confidence={speciesData.confidence}
+                commonName={
+                    safeSpeciesData?.taxonomic_lineage?.family && safeSpeciesData?.predicted_genus
+                        ? `${safeSpeciesData.taxonomic_lineage.family} ${safeSpeciesData.predicted_genus}`
+                        : safeSpeciesData?.final_taxonomy || 'Unknown Species'
+                }
+                confidence={safeSpeciesData.confidence}
             />
 
             {/* Taxonomic Information */}
             <TaxonomicTable
-                taxonomicLineage={speciesData.taxonomic_lineage}
-                sequenceLength={speciesData.sequence_length}
+                taxonomicLineage={safeSpeciesData.taxonomic_lineage}
+                sequenceLength={safeSpeciesData.sequence_length}
             />
 
             {/* Overall Details */}
             {/* <OverallDetails
-                genus={speciesData.predicted_genus}
-                classificationType={speciesData.classification_type}
+                genus={safeSpeciesData.predicted_genus}
+                classificationType={safeSpeciesData.classification_type}
             /> */}
         </div>
     )
