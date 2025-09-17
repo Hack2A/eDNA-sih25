@@ -125,32 +125,24 @@ const BriefOutputScreen = () => {
     const handleSelectReport = (report: any) => {
         console.log('Selected report:', report);
 
-        // Check if report and result_json exist
-        if (!report) {
-            console.error('No report selected');
-            alert('Unable to load report: No report data available');
-            return;
-        }
-
-        if (!report.result_json || Object.keys(report.result_json).length === 0) {
+        // Safety checks (your existing code is good)
+        if (!report || !report.result_json || Object.keys(report.result_json).length === 0) {
             console.error('Report has no result data');
             alert('Unable to load report: No analysis data found in this report');
             return;
         }
 
         try {
-            // Navigate to the same page but with the selected report as state
+            setDataRecord(report.result_json);
             navigate('/report', {
-                state: { response: report.result_json },
-                replace: true
+                state: { response: report.result_json }
             });
-            setShowHistory(false); // Close history panel after selection
+            setShowHistory(false);
         } catch (error) {
             console.error('Navigation error:', error);
             alert('Unable to navigate to report. Please try again.');
         }
     }
-
     return (
         <div className="w-[80%] flex flex-col justify-center mx-auto text-white my-10 gap-10">
 
