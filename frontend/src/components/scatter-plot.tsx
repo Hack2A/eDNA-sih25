@@ -24,15 +24,47 @@ const ScatterPlot: React.FC<ScatterPlotProps> = ({ data }) => {
                     <h3 className="text-md font-medium text-white">Kingdom Distribution</h3>
                     <p className="text-xs text-gray-400">Species count across different biological kingdoms</p>
                 </div>
-                <div className="flex items-center justify-center h-40 text-gray-400">
-                    No kingdom data available
+                <div className="flex items-center justify-center h-40 text-gray-400 text-center">
+                    <div>
+                        <div className="text-lg mb-1">No kingdom data available</div>
+                        <div className="text-xs">Data is being processed or no species were detected</div>
+                    </div>
                 </div>
             </div>
         )
     }
 
-    // Calculate dimensions and scaling
-    const maxCount = Math.max(...input.map(item => item.count))
+    // Validate and sanitize data points
+    const validInput = input.filter(item =>
+        item &&
+        typeof item.count === 'number' &&
+        !isNaN(item.count) &&
+        item.count >= 0
+    ).map(item => ({
+        ...item,
+        count: Math.max(0, item.count || 0), // Ensure non-negative count
+        kingdom_name: item.kingdom_name || item.kingdom || 'Unknown Kingdom'
+    }))
+
+    if (validInput.length === 0) {
+        return (
+            <div className="w-full h-full text-white">
+                <div className="mb-3">
+                    <h3 className="text-md font-medium text-white">Kingdom Distribution</h3>
+                    <p className="text-xs text-gray-400">Species count across different biological kingdoms</p>
+                </div>
+                <div className="flex items-center justify-center h-40 text-gray-400 text-center">
+                    <div>
+                        <div className="text-lg mb-1">Invalid data format</div>
+                        <div className="text-xs">Unable to process the provided kingdom data</div>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    // Calculate dimensions and scaling with fallback for edge cases
+    const maxCount = Math.max(...validInput.map(item => item.count), 1) // Minimum of 1 to avoid division by zero
     const padding = { top: 30, right: 30, bottom: 80, left: 60 }
     const chartWidth = 480
     const chartHeight = 300
@@ -40,9 +72,9 @@ const ScatterPlot: React.FC<ScatterPlotProps> = ({ data }) => {
     const plotHeight = chartHeight - padding.top - padding.bottom
 
     // Create data points with better spacing
-    const points = input.map((item, index) => {
+    const points = validInput.map((item, index) => {
         // Spread points evenly across the width
-        const x = padding.left + (index * plotWidth) / Math.max(input.length - 1, 1)
+        const x = padding.left + (index * plotWidth) / Math.max(validInput.length - 1, 1)
         // Use full height range, ensuring points don't go below minimum
         const y = padding.top + plotHeight - (item.count / maxCount) * plotHeight * 0.9 // Use 90% of height for better spacing
         const kingdom = item.kingdom_name || item.kingdom || `Kingdom ${index + 1}`
