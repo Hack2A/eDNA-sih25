@@ -82,7 +82,8 @@ python run.py
 ```
 ### 6. Frontend Setup
 
-```cd ../frontend
+```
+cd ../frontend
 npm install
 npm run dev
 ```
