@@ -41,7 +41,7 @@ We propose an **AI-driven pipeline** that:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/<your-username>/eDNA-sih25.git
+git clone https://github.com/Hack2A/eDNA-sih25
 cd eDNA-sih25
 ```
 
