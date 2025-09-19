@@ -18,8 +18,9 @@ const Navbar = () => {
     return (
         <nav className='px-2 py-1 text-white bg-[#131E24] border-b-1 border-b-gray-500'>
             <div className='flex items-center justify-between w-[90%] mx-auto py-2'>
-                <NavLink to="/">
+                <NavLink to="/" className={"flex gap-2 items-center"}>
                     <img src={AquaGenesis} alt="Logo" className='w-16 h-16 -my-4' />
+                    <span className='text-xl font-bold'>AquaGenesis</span>
                 </NavLink>
                 <div className='flex gap-5'>
                     <NavLink to="/data-ingest">

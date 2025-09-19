@@ -1,43 +1,68 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
+import { useForm, type SubmitHandler } from 'react-hook-form'
 import { authService } from '../../services/authService'
 import { NavLink, useNavigate } from 'react-router-dom'
 import AquaGenesis from '/icon.png'
 
+interface FormData {
+    email: string
+    password: string
+}
+
 const Authenticate = () => {
     window.document.title = "Authenticate | AquaGenesis"
     const [isLogin, setIsLogin] = useState(true)
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
-    const navigate = useNavigate();
+    const [apiError, setApiError] = useState<string>('')
+    const [isSubmitting, setIsSubmitting] = useState(false)
+    const navigate = useNavigate()
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault()
-        // Handle authentication logic here
-        console.log(isLogin ? 'Login' : 'Register', { email, password })
-        if (isLogin) {
-            authService.login({ email, password })
-                .then(response => {
-                    localStorage.setItem('token', response.data.access_token);
-                    navigate('/data-ingest');
-                    // Handle successful login (e.g., redirect, store token, etc.)
-                })
-                .catch(error => {
-                    console.error('Login error:', error);
-                    // Handle login error (e.g., show error message)
-                });
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+        reset,
+        clearErrors
+    } = useForm<FormData>({
+        mode: 'onBlur' // Validate on blur for better UX
+    })
+
+    const onSubmit: SubmitHandler<FormData> = async (data) => {
+        setIsSubmitting(true)
+        setApiError('')
+
+        try {
+            if (isLogin) {
+                const response = await authService.login(data)
+                localStorage.setItem('token', response.data.access_token)
+                navigate('/data-ingest')
+            } else {
+                const response = await authService.register(data)
+                localStorage.setItem('token', response.data.access_token)
+                navigate('/data-ingest')
+            }
+        } catch (error: any) {
+            console.error(`${isLogin ? 'Login' : 'Registration'} error:`, error)
+
+            // Handle different types of errors
+            if (error.response?.data?.message) {
+                setApiError(error.response.data.message)
+            } else if (error.response?.data?.detail) {
+                setApiError(error.response.data.detail)
+            } else if (error.message) {
+                setApiError(error.message)
+            } else {
+                setApiError(isLogin ? 'Login failed. Please try again.' : 'Registration failed. Please try again.')
+            }
+        } finally {
+            setIsSubmitting(false)
         }
-        else {
-            authService.register({ email, password })
-                .then(response => {
-                    localStorage.setItem('token', response.data.access_token);
-                    navigate('/data-ingest');
-                    // Handle successful registration (e.g., redirect, store token, etc.)
-                })
-                .catch(error => {
-                    console.error('Registration error:', error);
-                    // Handle registration error (e.g., show error message)
-                });
-        }
+    }
+
+    const toggleAuthMode = () => {
+        setIsLogin(!isLogin)
+        setApiError('')
+        clearErrors()
+        reset()
     }
 
     return (
@@ -68,7 +93,14 @@ const Authenticate = () => {
                         </p>
                     </div>
 
-                    <form onSubmit={handleSubmit} className='space-y-6'>
+                    {/* API Error Display */}
+                    {apiError && (
+                        <div className='mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-lg'>
+                            <p className='text-red-400 text-sm'>{apiError}</p>
+                        </div>
+                    )}
+
+                    <form onSubmit={handleSubmit(onSubmit)} className='space-y-6'>
                         <div>
                             <label htmlFor='email' className='block text-sm font-medium mb-2'>
                                 Email Address
@@ -76,12 +108,20 @@ const Authenticate = () => {
                             <input
                                 type='email'
                                 id='email'
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className='w-full p-3 rounded-lg bg-[#244247] text-white border border-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500'
+                                {...register('email', {
+                                    required: 'Email is required',
+                                    pattern: {
+                                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                                        message: 'Please enter a valid email address'
+                                    }
+                                })}
+                                className={`w-full p-3 rounded-lg bg-[#244247] text-white border ${errors.email ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-600 focus:border-blue-500 focus:ring-blue-500'
+                                    } focus:outline-none focus:ring-1`}
                                 placeholder='Enter your email'
-                                required
                             />
+                            {errors.email && (
+                                <p className='mt-1 text-sm text-red-400'>{errors.email.message}</p>
+                            )}
                         </div>
 
                         <div>
@@ -91,19 +131,38 @@ const Authenticate = () => {
                             <input
                                 type='password'
                                 id='password'
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className='w-full p-3 rounded-lg bg-[#244247] text-white border border-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500'
+                                {...register('password', {
+                                    required: 'Password is required',
+                                    minLength: {
+                                        value: 6,
+                                        message: 'Password must be at least 6 characters long'
+                                    }
+                                })}
+                                className={`w-full p-3 rounded-lg bg-[#244247] text-white border ${errors.password ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-600 focus:border-blue-500 focus:ring-blue-500'
+                                    } focus:outline-none focus:ring-1`}
                                 placeholder='Enter your password'
-                                required
                             />
+                            {errors.password && (
+                                <p className='mt-1 text-sm text-red-400'>{errors.password.message}</p>
+                            )}
                         </div>
 
                         <button
                             type='submit'
-                            className='w-full py-3 bg-[#226FA1] hover:bg-[#1c5c86] text-white font-semibold rounded-lg transition-colors duration-200 cursor-pointer'
+                            disabled={isSubmitting}
+                            className={`w-full py-3 text-white font-semibold rounded-lg transition-colors duration-200 ${isSubmitting
+                                ? 'bg-gray-600 cursor-not-allowed'
+                                : 'bg-[#226FA1] hover:bg-[#1c5c86] cursor-pointer'
+                                }`}
                         >
-                            {isLogin ? 'Sign In' : 'Create Account'}
+                            {isSubmitting ? (
+                                <div className='flex items-center justify-center gap-2'>
+                                    <div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin'></div>
+                                    {isLogin ? 'Signing In...' : 'Creating Account...'}
+                                </div>
+                            ) : (
+                                isLogin ? 'Sign In' : 'Create Account'
+                            )}
                         </button>
                     </form>
 
@@ -111,7 +170,8 @@ const Authenticate = () => {
                         <p className='text-white/60 text-sm'>
                             {isLogin ? "Don't have an account? " : "Already have an account? "}
                             <button
-                                onClick={() => setIsLogin(!isLogin)}
+                                type='button'
+                                onClick={toggleAuthMode}
                                 className='text-[#226FA1] hover:text-[#1b5983] font-medium underline cursor-pointer'
                             >
                                 {isLogin ? 'Register' : 'Sign In'}
