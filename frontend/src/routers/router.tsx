@@ -4,11 +4,11 @@ import Info from '../pages/info'
 import Authenticate from '../pages/forms/authenticate'
 import DataIngestion from '../pages/pipeline-based/data-ingestion'
 import BriefOutputScreen from '../pages/pipeline-based/brief-output'
-import DiversityDashboard from '../pages/diversity-dashboard'
 import SpecieSearch from '../pages/specie-search'
 import MainLayout from '../layout/main-layout'
 import SpecieDetails from '../pages/pipeline-based/specie-details'
-import ProtectedRoute from '../components/ProtectedRoute'
+import ProtectedRoute from './ProtectedRoute'
+import Dashboard from '../pages/dashboard'
 
 const AppRoutes = () => {
     return (
@@ -25,7 +25,7 @@ const AppRoutes = () => {
                         <Route path="/data-ingest" element={<DataIngestion />} />
                         <Route path="/report" element={<BriefOutputScreen />} />
                         <Route path="/visual/:specieID" element={<SpecieDetails />} />
-                        <Route path="/diversityglobe" element={<DiversityDashboard />} />
+                        <Route path="/dashboard" element={<Dashboard />} />
                         <Route path="/search-specie" element={<SpecieSearch />} />
                     </Route>
                 </Route>

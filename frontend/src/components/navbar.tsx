@@ -26,7 +26,7 @@ const Navbar = () => {
                     <NavLink to="/data-ingest">
                         <PlusCircleIcon className='h-6 w-6' />
                     </NavLink>
-                    {/* <NavLink to="/dashboard">Dashboard</NavLink> */}
+                    <NavLink to="/dashboard">Dashboard</NavLink>
                     <NavLink to="/report">Report</NavLink>
                     {/* <NavLink to="/search-specie">Species Explorer</NavLink> */}
                     {isAuthenticated ? (

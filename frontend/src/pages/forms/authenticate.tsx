@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useForm, type SubmitHandler } from 'react-hook-form'
 import { authService } from '../../services/authService'
-import { NavLink, useNavigate } from 'react-router-dom'
+import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import AquaGenesis from '/icon.png'
 
 interface FormData {
@@ -15,6 +15,10 @@ const Authenticate = () => {
     const [apiError, setApiError] = useState<string>('')
     const [isSubmitting, setIsSubmitting] = useState(false)
     const navigate = useNavigate()
+    const location = useLocation()
+
+    // Get the intended destination from the location state or default to dashboard
+    const from = location.state?.from?.pathname || '/dashboard'
 
     const {
         register,
@@ -34,11 +38,11 @@ const Authenticate = () => {
             if (isLogin) {
                 const response = await authService.login(data)
                 localStorage.setItem('token', response.data.access_token)
-                navigate('/data-ingest')
+                navigate(from, { replace: true })
             } else {
                 const response = await authService.register(data)
                 localStorage.setItem('token', response.data.access_token)
-                navigate('/data-ingest')
+                navigate(from, { replace: true })
             }
         } catch (error: any) {
             console.error(`${isLogin ? 'Login' : 'Registration'} error:`, error)

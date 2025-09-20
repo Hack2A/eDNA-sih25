@@ -8,4 +8,8 @@ export const dataRetrievalService = {
 	fetchAllReports: async () => {
 		return apiClient.get("/history");
 	},
+
+	fetchDashboardSummary: async () => {
+		return apiClient.get("/summary");
+	},
 };
