@@ -3,17 +3,14 @@ import apiClient from "./apiClient";
 export const authService = {
 	// Authentication service methods will be implemented here
 	login: async (credentials: { email: string; password: string }) => {
-		// TODO: Implement login functionality
 		return apiClient.post("/auth/login", credentials);
 	},
 
 	register: async (userData: { email: string; password: string }) => {
-		// TODO: Implement register functionality
 		return apiClient.post("/auth/register", userData);
 	},
 
 	logout: async () => {
-		// TODO: Implement logout functionality
 		localStorage.removeItem("token");
 		return apiClient.post("/auth/logout");
 	},
@@ -22,6 +19,22 @@ export const authService = {
 	isAuthenticated: (): boolean => {
 		const token = localStorage.getItem("token");
 		return !!token;
+	},
+
+	// Check if user is authenticated with server validation (async)
+	validateAuth: async (): Promise<boolean> => {
+		const token = localStorage.getItem("token");
+		if (token) {
+			try {
+				const res = await apiClient.get("/auth/check-auth");
+				return res.data.status === "success";
+			} catch (error) {
+				// Token is invalid, remove it
+				localStorage.removeItem("token");
+				return false;
+			}
+		}
+		return false;
 	},
 
 	// Get stored token

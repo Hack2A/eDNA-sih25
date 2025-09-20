@@ -11,6 +11,7 @@ interface SpecieReportCardProps {
     onViewDetails?: () => void
     // optional button label
     viewButtonText?: string
+    count: number
 }
 
 const SpecieReportCard: React.FC<SpecieReportCardProps> = ({
@@ -19,12 +20,14 @@ const SpecieReportCard: React.FC<SpecieReportCardProps> = ({
     phylum,
     icon,
     onViewDetails,
+    count,
     viewButtonText = 'View Details'
 }) => {
     // Safe extraction with fallbacks
     const safeTitle = title || 'Unknown Species'
     const safeKingdom = kingdom || 'Unknown Kingdom'
     const safePhylum = phylum || 'Unknown Phylum'
+    const safeCount = count || 0
 
     return (
         <div className="relative bg-[#1C2426] rounded-lg p-5 border border-[#3B4A54] w-full max-w-xs flex flex-col justify-between">
@@ -38,6 +41,9 @@ const SpecieReportCard: React.FC<SpecieReportCardProps> = ({
                     </div>
                     <div className="text-[#9EB0BA]">
                         Phylum: <span className={`${phylum ? 'text-[#BFD3D8]' : 'text-gray-400'}`}>{safePhylum}</span>
+                    </div>
+                    <div className="text-[#9EB0BA]">
+                        Count: <span className={`${count ? 'text-[#BFD3D8]' : 'text-gray-400'}`}>{safeCount}</span>
                     </div>
                 </div>
             </div>

@@ -4,10 +4,27 @@ import { dataRetrievalService } from "../services/dataRetreiveService"
 import ReportListItem from "../components/dashboard/report-list-item"
 import ReportListHeader from "../components/dashboard/report-list-header"
 
+interface Report {
+    id: number;
+    created_at: string;
+    result_json: {
+        input_summary: {
+            sequences_provided: number;
+        };
+        abundance_summary: {
+            unique_taxa_count: number;
+        };
+        confidence_summary: {
+            very_low: number;
+        };
+        status: string;
+    };
+}
+
 const Dashboard = () => {
 
     window.document.title = "Dashboard | AquaGenesis"
-    const [pastReports, setPastReports] = useState<any>([]);
+    const [pastReports, setPastReports] = useState<Report[]>([]);
     const [summary, setSummary] = useState<any>({});
 
     useEffect(() => {
@@ -55,8 +72,15 @@ const Dashboard = () => {
 
             {/* Char or Graphical Representation */}
             <div className="flex flex-col">
-                <h1 className="text-xl font-bold">Report Visual</h1>
-                Here, I was thinking of adding some charts and graphs to visualize user data
+                <h1 className="text-xl font-bold mb-2">Report Visual</h1>
+                <div className="flex justify-between gap-6">
+                    <div className="w-1/3 h-96 bg-[#226FA1] p-6 rounded-lg flex flex-col text-white">
+                    </div>
+                    <div className="w-1/3 h-96 bg-[#226FA1] p-6 rounded-lg flex flex-col text-white">
+                    </div>
+                    <div className="w-1/3 h-96 bg-[#226FA1] p-6 rounded-lg flex flex-col text-white">
+                    </div>
+                </div>
             </div>
 
             {/* Recent Activity */}
@@ -65,20 +89,21 @@ const Dashboard = () => {
                 {pastReports.length === 0 ? (
                     <p className="text-gray-400">No past reports available.</p>
                 ) : (
-                    // In your parent component
                     <div className="rounded-lg overflow-hidden bg-[#244247]">
                         <ReportListHeader />
-                        {pastReports.map((report) => (
-                            <ReportListItem
-                                key={report.id}
-                                date={report.created_at}
-                                id={report.id}
-                                total_species={report.result_json.input_summary.sequences_provided}
-                                unique_species={report.result_json.abundance_summary.unique_taxa_count}
-                                potential_discoveries={report.result_json.confidence_summary.very_low}
-                                status={report.result_json.status}
-                            />
-                        ))}
+                        <div className="max-h-[620px] overflow-y-auto">
+                            {pastReports.map((report: Report) => (
+                                <ReportListItem
+                                    key={report.id}
+                                    date={report.created_at}
+                                    id={report.id}
+                                    total_species={report.result_json.input_summary.sequences_provided}
+                                    unique_species={report.result_json.abundance_summary.unique_taxa_count}
+                                    potential_discoveries={report.result_json.confidence_summary.very_low}
+                                    status={report.result_json.status}
+                                />
+                            ))}
+                        </div>
                     </div>
                 )}
             </div>

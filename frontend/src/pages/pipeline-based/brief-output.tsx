@@ -387,6 +387,7 @@ const BriefOutputScreen = () => {
                                         title={s?.final_taxonomy || 'Unknown Species'}
                                         kingdom={s?.taxonomic_lineage?.kingdom || 'Unknown Kingdom'}
                                         phylum={s?.taxonomic_lineage?.phylum || 'Unknown Phylum'}
+                                        count={s?.count || 0}
                                         onViewDetails={() => {
                                             console.log('====================================');
                                             console.log("Sending the following data to details page", s);
