@@ -163,3 +163,28 @@ def predict():
     except Exception as e:
         db.session.rollback()
         return jsonify({"status": "error", "message": str(e)}), 500
+    
+@pipeline_bp.route("/pipeline/<int:result_id>", methods=["GET"])
+@jwt_required()
+def get_pipeline_result(result_id):
+    try:
+        pipeline_result = PipelineResult.query.filter_by(id=result_id).first()
+
+        if not pipeline_result:
+            return jsonify({
+                "status": "error",
+                "message": f"Pipeline result with id {result_id} not found"
+            }), 404
+
+        return jsonify({
+            "status": "success",
+            "pipeline_result": {
+                "id": pipeline_result.id,
+                "user_id": pipeline_result.user_id,
+                "result_json": pipeline_result.result_json,
+                "created_at": pipeline_result.created_at.isoformat()
+            }
+        })
+
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
