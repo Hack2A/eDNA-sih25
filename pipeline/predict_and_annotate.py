@@ -163,27 +163,21 @@ def calculate_abundance_summary(prediction_list):
     return summary
 
 def calculate_kingdom_summary(prediction_list):
-    all_kingdoms = ['Animalia', 'Plantae', 'Fungi', 'Protista', 'Bacteria', 'Archaea']
-    kingdom_counts = {kingdom: 0 for kingdom in all_kingdoms}
-    kingdom_counts["Outlier"] = 0
-    
+    kingdom_counts = {}
+
     for pred in prediction_list:
         final_decision = pred.get('final_taxonomy')
         lineage = pred.get('taxonomic_lineage')
-        
+
         kingdom = 'Unknown' 
         if final_decision == "Noise (Outlier)":
             kingdom = "Outlier"
         elif lineage and isinstance(lineage, dict):
             kingdom = lineage.get('kingdom', 'Unknown')
-        
-        if kingdom in kingdom_counts:
-            kingdom_counts[kingdom] += 1
-        else:
-            kingdom_counts[kingdom] = kingdom_counts.get(kingdom, 0) + 1
-            
-    summary_list = [{"kingdom": key, "count": value} for key, value in kingdom_counts.items()]
-    return summary_list
+
+        kingdom_counts[kingdom] = kingdom_counts.get(kingdom, 0) + 1
+
+    return [{"kingdom": key, "count": value} for key, value in kingdom_counts.items()]
 
 def format_json_response(status, metadata=None, predictions=None, input_summary=None, confidence_summary=None, abundance_summary=None, kingdom_summary=None, message=None):
     response = {
