@@ -8,7 +8,6 @@ from eukaryotic_pipeline import EukaryoticPipeline
 from Bio import Entrez
 from dotenv import load_dotenv
 
-
 load_dotenv()
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -19,6 +18,7 @@ ENTREZ_EMAIL = os.getenv("ENTREZ_EMAIL")
 
 loaded_pipeline = None
 blast_lookup_db = None
+
 try:
     if not os.path.exists(PIPELINE_SAVE_PATH):
         raise FileNotFoundError(f"Trained pipeline not found at '{PIPELINE_SAVE_PATH}'. Cannot start the service.")
@@ -111,7 +111,6 @@ def read_sequences_from_file(filepath):
                 if current_sequence: sequences.append(current_sequence)
             logging.info(f"Successfully read {len(sequences)} sequences from FASTA file.")
             return sequences, None
-
         elif extension == '.csv':
             df = pd.read_csv(filepath, low_memory=False)
             if 'sequence' in df.columns:
@@ -124,16 +123,13 @@ def read_sequences_from_file(filepath):
                 return sequences, None
             else:
                 return None, f"Could not find a 'sequence' column in the CSV. Detected columns: {list(df.columns)}"
-        
         elif extension == '.txt':
             with open(filepath, 'r') as f:
                 sequences = [line.strip() for line in f if line.strip()]
             logging.info(f"Successfully read {len(sequences)} sequences from TXT file.")
             return sequences, None
-        
         else:
             return None, f"Unsupported file extension: '{extension}'. Please use .fasta, .csv, or .txt."
-
     except FileNotFoundError:
         return None, f"File not found at '{filepath}'"
     except Exception as e:
@@ -167,7 +163,10 @@ def calculate_abundance_summary(prediction_list):
     return summary
 
 def calculate_kingdom_summary(prediction_list):
-    kingdom_counts = {}
+    all_kingdoms = ['Animalia', 'Plantae', 'Fungi', 'Protista', 'Bacteria', 'Archaea']
+    kingdom_counts = {kingdom: 0 for kingdom in all_kingdoms}
+    kingdom_counts["Outlier"] = 0
+    
     for pred in prediction_list:
         final_decision = pred.get('final_taxonomy')
         lineage = pred.get('taxonomic_lineage')
@@ -177,9 +176,14 @@ def calculate_kingdom_summary(prediction_list):
             kingdom = "Outlier"
         elif lineage and isinstance(lineage, dict):
             kingdom = lineage.get('kingdom', 'Unknown')
+        
+        if kingdom in kingdom_counts:
+            kingdom_counts[kingdom] += 1
+        else:
+            kingdom_counts[kingdom] = kingdom_counts.get(kingdom, 0) + 1
             
-        kingdom_counts[kingdom] = kingdom_counts.get(kingdom, 0) + 1
-    return kingdom_counts
+    summary_list = [{"kingdom": key, "count": value} for key, value in kingdom_counts.items()]
+    return summary_list
 
 def format_json_response(status, metadata=None, predictions=None, input_summary=None, confidence_summary=None, abundance_summary=None, kingdom_summary=None, message=None):
     response = {
@@ -193,7 +197,6 @@ def format_json_response(status, metadata=None, predictions=None, input_summary=
     }
     if message: response["message"] = message
     return json.dumps(response, indent=4)
-
 
 def process_prediction_request(request_data: dict):
     if not loaded_pipeline:
@@ -214,13 +217,11 @@ def process_prediction_request(request_data: dict):
                 sequences_to_classify.append(cleaned_sequence)
         else:
             error_msg = "For 'manual' file_type, 'data' must be a non-empty string."
-
     elif file_type == 'file':
         if data and isinstance(data, str):
             sequences_to_classify, error_msg = read_sequences_from_file(data)
         else:
             error_msg = "For 'file' file_type, 'data' must be a string representing the file path."
-    
     else:
         error_msg = f"Invalid 'file_type': {file_type}. Must be 'manual' or 'file'."
 
@@ -254,7 +255,18 @@ def process_prediction_request(request_data: dict):
                         "closest_relative": best_hit['subject_scientific_name'],
                         "identity": f"{best_hit['percentage_identity']:.2f}%"
                     }
-    
+
+    grouped_predictions = {}
+    for pred in prediction_list:
+        key = pred['final_taxonomy']
+        if key not in grouped_predictions:
+            grouped_predictions[key] = pred
+            grouped_predictions[key]['count'] = 1
+            grouped_predictions[key].pop('sequence', None)
+        else:
+            grouped_predictions[key]['count'] += 1
+    final_prediction_list = list(grouped_predictions.values())
+
     end_time = time.time()
     
     confidence_summary = calculate_confidence_summary(prediction_list)
@@ -270,7 +282,7 @@ def process_prediction_request(request_data: dict):
     final_response_json_str = format_json_response(
         status="success",
         metadata=metadata,
-        predictions=prediction_list,
+        predictions=final_prediction_list,
         input_summary={"sequences_provided": len(sequences_to_classify)},
         confidence_summary=confidence_summary,
         abundance_summary=abundance_summary,
@@ -282,4 +294,3 @@ def process_prediction_request(request_data: dict):
 if __name__ == "__main__":
     print("This module is designed to be imported and used via API calls.")
     print("Use process_prediction_request(request_data) function to process sequences.")
-
