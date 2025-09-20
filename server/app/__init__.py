@@ -14,6 +14,7 @@ def create_app():
     # Import models (needed so SQLAlchemy knows about them)
     from .models.user_model import User  
     from .models.pipeline_result_model import PipelineResult
+    from .models.dashboard_modle import UserSummary
     with app.app_context():
          db.create_all()   # Create tables if they don’t exist
 
@@ -24,4 +25,6 @@ def create_app():
     app.register_blueprint(pipeline_bp, url_prefix="/api")
     from .routes.history_routes import history_bp
     app.register_blueprint(history_bp, url_prefix="/api")
+    from .routes.dashboard_route import summary_bp
+    app.register_blueprint(summary_bp, url_prefix="/api")
     return app
