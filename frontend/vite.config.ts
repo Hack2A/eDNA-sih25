@@ -8,7 +8,10 @@ export default defineConfig(({ mode }) => {
 	return {
 		plugins: [tailwindcss(), react()],
 		server: {
-			allowedHosts: ["solid-enormously-crane.ngrok-free.app"],
+			allowedHosts: [
+				"solid-enormously-crane.ngrok-free.app",
+				"topical-gratefully-wasp.ngrok-free.app",
+			],
 			host: true,
 			port: 5173,
 			proxy: useProxy
