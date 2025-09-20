@@ -9,9 +9,13 @@ const InfoCard = (props: InfoCardProps) => {
     const safeContent = props.content || '0'
 
     return (
-        <div>
-            {safeTitle}
-            {safeContent}
+        <div className="w-1/4 bg-[#226FA1] p-6 rounded-lg flex flex-col text-white">
+            <span className="">
+                {safeTitle}
+            </span>
+            <span className="text-3xl">
+                {safeContent}
+            </span>
         </div>
     )
 }

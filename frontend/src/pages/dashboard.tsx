@@ -2,11 +2,12 @@ import { useEffect, useState } from "react"
 import InfoCard from "../components/dashboard/info-card"
 import { dataRetrievalService } from "../services/dataRetreiveService"
 import ReportListItem from "../components/dashboard/report-list-item"
+import ReportListHeader from "../components/dashboard/report-list-header"
 
 const Dashboard = () => {
 
     window.document.title = "Dashboard | AquaGenesis"
-    const [pastReports, setPastReports] = useState([]);
+    const [pastReports, setPastReports] = useState<any>([]);
     const [summary, setSummary] = useState<any>({});
 
     useEffect(() => {
@@ -46,10 +47,10 @@ const Dashboard = () => {
 
             {/* Number data for the user regarding the uploads and reports */}
             <div className="flex justify-between gap-6">
-                <InfoCard title="Total Reports Generated :" content={summary.total_reports_generated || 0} />
-                <InfoCard title="Total Species Found :" content={summary.total_species_found || 0} />
-                <InfoCard title="Unique Species Found :" content={summary.unique_species_found || 0} />
-                <InfoCard title="Potential New Discoveries :" content={summary.potential_discoveries || 0} />
+                <InfoCard title="Reports Generated" content={summary.total_reports_generated || 0} />
+                <InfoCard title="Species Found" content={summary.total_species_found || 0} />
+                <InfoCard title="Unique Species Found" content={summary.unique_species_found || 0} />
+                <InfoCard title="Potential New Discoveries" content={summary.potential_discoveries || 0} />
             </div>
 
             {/* Char or Graphical Representation */}
@@ -60,20 +61,24 @@ const Dashboard = () => {
 
             {/* Recent Activity */}
             <div className="flex flex-col">
-                <h1 className="text-xl font-bold">Reports History</h1>
+                <h1 className="text-xl font-bold mb-2">Reports History</h1>
                 {pastReports.length === 0 ? (
                     <p className="text-gray-400">No past reports available.</p>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
-                        {pastReports.map((item: any) => (
+                    // In your parent component
+                    <div className="rounded-lg overflow-hidden bg-[#244247]">
+                        <ReportListHeader />
+                        {pastReports.map((report) => (
                             <ReportListItem
-                                date={item.created_at}
-                                id={item.id}
-                                total_species={item.result_json.input_summary.sequences_provided}
-                                unique_species={item.result_json.abundance_summary.unique_taxa_count}
-                                potential_discoveries={item.result_json.confidence_summary.very_low}
-                                status={item.result_json.status}
-                            />))}
+                                key={report.id}
+                                date={report.created_at}
+                                id={report.id}
+                                total_species={report.result_json.input_summary.sequences_provided}
+                                unique_species={report.result_json.abundance_summary.unique_taxa_count}
+                                potential_discoveries={report.result_json.confidence_summary.very_low}
+                                status={report.result_json.status}
+                            />
+                        ))}
                     </div>
                 )}
             </div>
