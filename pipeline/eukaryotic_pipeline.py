@@ -58,11 +58,15 @@ class EukaryoticPipeline:
         encoded_list = [[mapping.get(nuc, [0, 0, 0, 0]) for nuc in seq] for seq in sequences]
         return pad_sequences(encoded_list, maxlen=self.max_seq_len, padding='post', dtype='float32')
 
-    def train(self, csv_filepath, model_type='RandomForest', sample_fraction=1.0):
+   
+    def train(self, dataframe, model_type='RandomForest', sample_fraction=1.0):
         print(f"\n--- Starting Training Process with {model_type} ---")
         self.model_type = model_type
-        print(f"Step 1: Ingesting and cleaning data from {csv_filepath}...")
-        df = pd.read_csv(csv_filepath, low_memory=False)
+        print(f"Step 1: Ingesting and cleaning data...")
+        
+       
+        df = dataframe.copy()
+
         df.dropna(subset=['sequence', 'scientific_name'], inplace=True)
         df.drop_duplicates(subset=['sequence'], keep='first', inplace=True)
         df['sequence_cleaned'] = df['sequence'].apply(self._sanitize_sequence)
@@ -134,7 +138,7 @@ class EukaryoticPipeline:
         )
         return model
 
-    def predict(self, new_sequences, confidence_threshold=0.90):
+    def predict(self, new_sequences, confidence_threshold=0.50):
         if not all([self.label_encoder, self.classifier]):
             raise RuntimeError("Pipeline has not been trained yet. Call .train() first.")
         print("\n--- Starting Prediction Process ---")
@@ -213,13 +217,3 @@ class EukaryoticPipeline:
             pipeline.classifier = tf.keras.models.load_model(os.path.join(dir_path, 'classifier.keras'))
         print(f"Pipeline loaded successfully.")
         return pipeline
-
-    @staticmethod
-    def append_data(csv_filepath, new_data_dict):
-        if not os.path.exists(csv_filepath):
-            pd.DataFrame(new_data_dict).to_csv(csv_filepath, index=False)
-            print(f"Created new file and appended {len(new_data_dict['sequence'])} new records.")
-        else:
-            new_df = pd.DataFrame(new_data_dict)
-            new_df.to_csv(csv_filepath, mode='a', header=False, index=False)
-            print(f"Appended {len(new_df)} new records to {csv_filepath}.")
