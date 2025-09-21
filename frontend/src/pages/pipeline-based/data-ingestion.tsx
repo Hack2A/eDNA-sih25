@@ -151,7 +151,7 @@ const DataIngestion = () => {
                                     accept=".txt,.csv,.fasta,.fa"
                                     required
                                     {...register('data')}
-                                    className="w-full h-20 p-4 rounded-lg bg-[#244247] text-white border border-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-600 file:text-white file:font-medium hover:file:bg-blue-700"
+                                    className="w-full h-20 p-4 rounded-lg bg-[#244247] text-white border border-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-[#226FA1] file:text-white file:font-medium hover:file:bg-bg-[#1c5e8a] cursor-pointer"
                                 />
                             </div>
                         )}

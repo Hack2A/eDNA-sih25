@@ -9,7 +9,7 @@ interface SpeciesHeroProps {
 const SpeciesHero: React.FC<SpeciesHeroProps> = ({ commonName, confidence, imageUrl }) => {
     const safeCommonName = commonName || 'Unknown Species'
     const safeConfidence = confidence ?? 0
-    const formattedConfidence = isNaN(safeConfidence) ? 0 : Math.round(safeConfidence * 100)
+    const formattedConfidence = isNaN(safeConfidence) ? 0 : safeConfidence * 100
 
     return (
         <div className="relative bg-gradient-to-r from-[#1C2426] to-[#2A3B42] rounded-lg overflow-hidden">

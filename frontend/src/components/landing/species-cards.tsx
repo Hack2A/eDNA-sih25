@@ -11,6 +11,12 @@ interface SpecieReportCardProps {
     onViewDetails?: () => void
     // optional button label
     viewButtonText?: string
+    count: number
+    // Optional custom labels
+    kingdomLabel?: string
+    phylumLabel?: string
+    // Option to hide phylum field
+    hidePhylum?: boolean
 }
 
 const SpecieReportCard: React.FC<SpecieReportCardProps> = ({
@@ -19,12 +25,17 @@ const SpecieReportCard: React.FC<SpecieReportCardProps> = ({
     phylum,
     icon,
     onViewDetails,
-    viewButtonText = 'View Details'
+    count,
+    viewButtonText = 'View Details',
+    kingdomLabel = 'Kingdom',
+    phylumLabel = 'Phylum',
+    hidePhylum = false
 }) => {
     // Safe extraction with fallbacks
     const safeTitle = title || 'Unknown Species'
-    const safeKingdom = kingdom || 'Unknown Kingdom'
-    const safePhylum = phylum || 'Unknown Phylum'
+    const safeKingdom = kingdom || `Unknown ${kingdomLabel}`
+    const safePhylum = phylum || `Unknown ${phylumLabel}`
+    const safeCount = count || 0
 
     return (
         <div className="relative bg-[#1C2426] rounded-lg p-5 border border-[#3B4A54] w-full max-w-xs flex flex-col justify-between">
@@ -34,10 +45,15 @@ const SpecieReportCard: React.FC<SpecieReportCardProps> = ({
                 <div className="flex-1">
                     <h3 className="text-white font-semibold text-lg break-words">{safeTitle}</h3>
                     <div className="text-[#9EB0BA] mt-2">
-                        Kingdom: <span className={`${kingdom ? 'text-[#BFD3D8]' : 'text-gray-400'}`}>{safeKingdom}</span>
+                        {kingdomLabel}: <span className={`${kingdom ? 'text-[#BFD3D8]' : 'text-gray-400'}`}>{safeKingdom}</span>
                     </div>
+                    {!hidePhylum && (
+                        <div className="text-[#9EB0BA]">
+                            {phylumLabel}: <span className={`${phylum ? 'text-[#BFD3D8]' : 'text-gray-400'}`}>{safePhylum}</span>
+                        </div>
+                    )}
                     <div className="text-[#9EB0BA]">
-                        Phylum: <span className={`${phylum ? 'text-[#BFD3D8]' : 'text-gray-400'}`}>{safePhylum}</span>
+                        Count: <span className={`${count ? 'text-[#BFD3D8]' : 'text-gray-400'}`}>{safeCount}</span>
                     </div>
                 </div>
             </div>
