@@ -3,11 +3,13 @@ import os
 import pandas as pd
 import time
 import logging
+import re 
 from datetime import datetime
 from eukaryotic_pipeline import EukaryoticPipeline
 from Bio import Entrez
 from dotenv import load_dotenv
 import numpy as np
+
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -19,6 +21,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PIPELINE_SAVE_PATH = os.path.join(SCRIPT_DIR, 'eukaryote_classifier_pipeline')
 BLAST_RESULTS_PATH = os.path.join(SCRIPT_DIR, 'LSU_eukaryote_final_rRNA-blastn.csv')
 ENTREZ_EMAIL = os.getenv("ENTREZ_EMAIL")
+
 
 
 def build_blast_lookup(blast_filepath):
@@ -41,7 +44,7 @@ def build_blast_lookup(blast_filepath):
         blast_df.dropna(subset=required_cols, inplace=True)
 
         if blast_df.empty:
-            logging.warning(" The BLAST database is empty after removing rows with missing essential data.")
+            logging.warning("⚠️ The BLAST database is empty after removing rows with missing essential data.")
             return {}
 
         blast_df.sort_values(by=['query_sequence', 'expect_value', 'percentage_identity'], ascending=[True, True, False], inplace=True)
@@ -116,23 +119,20 @@ def read_sequences_from_file(filepath):
             df = pd.read_csv(filepath, low_memory=False)
             if 'sequence' in df.columns:
                 sequences = df['sequence'].dropna().tolist()
-                logging.info(f"Successfully read {len(sequences)} sequences from 'sequence' column.")
                 return sequences, None
             elif len(df.columns) == 1:
                 sequences = df.iloc[:, 0].dropna().tolist()
-                logging.warning(f"No 'sequence' column found. Reading from single column '{df.columns[0]}'.")
                 return sequences, None
             else:
-                return None, f"Could not find a 'sequence' column in the CSV. Detected columns: {list(df.columns)}"
+                return None, f"Could not find a 'sequence' column in the CSV."
         
         elif extension == '.txt':
             with open(filepath, 'r', encoding='utf-8') as f:
                 sequences = [line.strip() for line in f if line.strip()]
-            logging.info(f"Successfully read {len(sequences)} sequences from TXT file.")
             return sequences, None
         
         else:
-            return None, f"Unsupported file extension: '{extension}'. Please use .fasta, .csv, or .txt."
+            return None, f"Unsupported file extension: '{extension}'."
 
     except FileNotFoundError:
         return None, f"File not found at '{filepath}'"
@@ -186,10 +186,10 @@ blast_lookup_db = None
 
 try:
     if not os.path.exists(PIPELINE_SAVE_PATH):
-        raise FileNotFoundError(f"Trained pipeline not found at '{PIPELINE_SAVE_PATH}'. Cannot start the service.")
+        raise FileNotFoundError(f"Trained pipeline not found at '{PIPELINE_SAVE_PATH}'.")
     
     if not ENTREZ_EMAIL or "@" not in ENTREZ_EMAIL:
-        logging.warning("NCBI Entrez email not configured in .env file. API calls may be throttled.")
+        logging.warning("NCBI Entrez email not configured. API calls may be throttled.")
         Entrez.email = "default.email@example.com"
     else:
         Entrez.email = ENTREZ_EMAIL
@@ -208,7 +208,7 @@ except Exception as e:
 
 def process_prediction_request(request_data: dict):
     if not loaded_pipeline:
-        return json.loads(format_json_response("error", message="Pipeline is not initialized. Check server logs for errors."))
+        return json.loads(format_json_response(status="error", message="Pipeline is not initialized. Check server logs for errors."))
 
     start_time = time.time()
     
@@ -233,8 +233,16 @@ def process_prediction_request(request_data: dict):
     else:
         error_msg = f"Invalid 'file_type': {file_type}. Must be 'manual' or 'file'."
 
-    if error_msg: return json.loads(format_json_response("error", message=error_msg))
-    if not sequences_to_classify: return json.loads(format_json_response("success", message="No valid sequences were provided."))
+    if error_msg: 
+        return json.loads(format_json_response(status="error", message=error_msg))
+    
+    if not sequences_to_classify: 
+        return json.loads(format_json_response(status="success", message="No valid sequences were provided."))
+
+    
+    for seq in sequences_to_classify:
+        if re.search(r'\d', seq): 
+            return json.loads(format_json_response(status="error", message="Not a valid sequence"))
 
     prediction_json = loaded_pipeline.predict(new_sequences=sequences_to_classify)
     prediction_list = json.loads(prediction_json)
