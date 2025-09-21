@@ -8,15 +8,12 @@ from eukaryotic_pipeline import EukaryoticPipeline
 from sklearn.model_selection import train_test_split 
 
 
-PIPELINE_PATH = 'eukaryote_classifier_pipeline'
+PIPELINE_PATH = 'eukaryote_classifier_pipeline_full_data'
 MERGED_DATA_PATH = 'temp_merged_training_data.csv'
 
 
 def validate_pipeline(pipeline_path, data_path):
-    """
-    Loads a trained pipeline and evaluates its performance on a held-out
-    test set to generate a realistic validation report.
-    """
+    
    
     if not os.path.exists(pipeline_path):
         raise FileNotFoundError(f"Trained pipeline directory not found at: {pipeline_path}. Please run train.py first.")

@@ -7,35 +7,56 @@ from datetime import datetime
 from eukaryotic_pipeline import EukaryoticPipeline
 from Bio import Entrez
 from dotenv import load_dotenv
-
+import numpy as np
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-PIPELINE_DIR = os.path.dirname(os.path.abspath(__file__))
-PIPELINE_SAVE_PATH = os.path.join(PIPELINE_DIR, 'eukaryote_classifier_pipeline')
-BLAST_RESULTS_PATH = os.path.join(PIPELINE_DIR, 'LSU_eukaryote_final_rRNA-blastn.csv')
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
+PIPELINE_SAVE_PATH = os.path.join(SCRIPT_DIR, 'eukaryote_classifier_pipeline')
+BLAST_RESULTS_PATH = os.path.join(SCRIPT_DIR, 'LSU_eukaryote_final_rRNA-blastn.csv')
 ENTREZ_EMAIL = os.getenv("ENTREZ_EMAIL")
 
-loaded_pipeline = None
-blast_lookup_db = None
-try:
-    if not os.path.exists(PIPELINE_SAVE_PATH):
-        raise FileNotFoundError(f"Trained pipeline not found at '{PIPELINE_SAVE_PATH}'. Cannot start the service.")
-    
-    if not ENTREZ_EMAIL or "@" not in ENTREZ_EMAIL:
-        logging.warning("NCBI Entrez email not configured in .env file. API calls may be throttled.")
-        Entrez.email = "default.email@example.com"
-    else:
-        Entrez.email = ENTREZ_EMAIL
 
-    logging.info("--- Initializing Prediction Environment ---")
-    loaded_pipeline = EukaryoticPipeline.load_pipeline(PIPELINE_SAVE_PATH)
-    blast_lookup_db = build_blast_lookup(BLAST_RESULTS_PATH)
-    logging.info("--- Initialization Complete. Ready for requests. ---")
+def build_blast_lookup(blast_filepath):
+    logging.info(f"Building local BLAST annotation database from {blast_filepath}...")
+    try:
+        required_cols = [
+            'query_sequence', 
+            'subject_scientific_name', 
+            'percentage_identity', 
+            'expect_value', 
+            'subject_taxid'
+        ]
+        
+        blast_df = pd.read_csv(
+            blast_filepath,
+            usecols=required_cols,
+            low_memory=False
+        )
+        
+        blast_df.dropna(subset=required_cols, inplace=True)
 
-except Exception as e:
-    logging.critical(f"FATAL: A critical error occurred during initialization: {e}")
+        if blast_df.empty:
+            logging.warning(" The BLAST database is empty after removing rows with missing essential data.")
+            return {}
+
+        blast_df.sort_values(by=['query_sequence', 'expect_value', 'percentage_identity'], ascending=[True, True, False], inplace=True)
+        best_hits_df = blast_df.drop_duplicates(subset='query_sequence', keep='first')
+        lookup_dict = best_hits_df.set_index('query_sequence').to_dict(orient='index')
+        
+        logging.info(f"✅ Annotation database ready with {len(lookup_dict)} unique sequences.")
+        return lookup_dict
+        
+    except FileNotFoundError:
+        logging.warning(f"BLAST results file not found at '{blast_filepath}'. Annotation will be skipped.")
+        return None
+    except Exception as e:
+        logging.error(f"Could not process BLAST file. Error: {e}")
+        return None
 
 def get_taxid_from_name(genus_name):
     try:
@@ -43,7 +64,7 @@ def get_taxid_from_name(genus_name):
         handle = Entrez.esearch(db="taxonomy", term=genus_name, retmax="1")
         record = Entrez.read(handle)
         handle.close()
-        if record["IdList"]:
+        if record.get("IdList"):
             return record["IdList"][0]
         return None
     except Exception as e:
@@ -72,27 +93,6 @@ def get_taxonomy_from_taxid(taxid):
         logging.warning(f"Could not fetch taxonomy for taxid {taxid}. Error: {e}")
         return None
 
-def build_blast_lookup(blast_filepath):
-    logging.info(f"Building local BLAST annotation database from {blast_filepath}...")
-    try:
-        blast_df = pd.read_csv(
-            blast_filepath,
-            usecols=['query_sequence', 'subject_scientific_name', 'percentage_identity', 'expect_value', 'subject_taxid'],
-            low_memory=False
-        )
-        blast_df.dropna(inplace=True)
-        blast_df.sort_values(by=['query_sequence', 'expect_value', 'percentage_identity'], ascending=[True, True, False], inplace=True)
-        best_hits_df = blast_df.drop_duplicates(subset='query_sequence', keep='first')
-        lookup_dict = best_hits_df.set_index('query_sequence').to_dict(orient='index')
-        logging.info(f"Annotation database ready with {len(lookup_dict)} unique sequences.")
-        return lookup_dict
-    except FileNotFoundError:
-        logging.warning(f"BLAST results file not found at '{blast_filepath}'. Annotation will be skipped for novel taxa.")
-        return None
-    except Exception as e:
-        logging.error(f"Could not process BLAST file. Error: {e}")
-        return None
-
 def read_sequences_from_file(filepath):
     _, extension = os.path.splitext(filepath)
     extension = extension.lower()
@@ -100,7 +100,7 @@ def read_sequences_from_file(filepath):
     try:
         if extension in ['.fasta', '.fa', '.fna']:
             sequences, current_sequence = [], ""
-            with open(filepath, 'r') as f:
+            with open(filepath, 'r', encoding='utf-8') as f:
                 for line in f:
                     line = line.strip()
                     if line.startswith('>'):
@@ -126,7 +126,7 @@ def read_sequences_from_file(filepath):
                 return None, f"Could not find a 'sequence' column in the CSV. Detected columns: {list(df.columns)}"
         
         elif extension == '.txt':
-            with open(filepath, 'r') as f:
+            with open(filepath, 'r', encoding='utf-8') as f:
                 sequences = [line.strip() for line in f if line.strip()]
             logging.info(f"Successfully read {len(sequences)} sequences from TXT file.")
             return sequences, None
@@ -140,11 +140,7 @@ def read_sequences_from_file(filepath):
         return None, f"An error occurred while reading the file: {e}"
 
 def calculate_confidence_summary(prediction_list):
-    summary = {
-        "confident_match": 0, "likely_match": 0,
-        "uncertain_match": 0, "low_confidence": 0,
-        "very_low": 0
-    }
+    summary = {"confident_match": 0, "likely_match": 0, "uncertain_match": 0, "low_confidence": 0, "very_low": 0}
     for pred in prediction_list:
         confidence = pred.get('confidence', 0)
         if confidence >= 0.9: summary["confident_match"] += 1
@@ -159,52 +155,65 @@ def calculate_abundance_summary(prediction_list):
     for pred in prediction_list:
         taxon = pred.get('final_taxonomy', 'Unknown')
         abundance[taxon] = abundance.get(taxon, 0) + 1
-    
-    summary = {
-        "unique_taxa_count": len(abundance),
-        "abundance_counts": abundance
-    }
-    return summary
+    return {"unique_taxa_count": len(abundance), "abundance_counts": abundance}
 
 def calculate_kingdom_summary(prediction_list):
-    kingdom_counts = {}
+    kingdom_counts = {"Outlier": 0}
     for pred in prediction_list:
         final_decision = pred.get('final_taxonomy')
         lineage = pred.get('taxonomic_lineage')
-        
         kingdom = 'Unknown' 
         if final_decision == "Noise (Outlier)":
             kingdom = "Outlier"
         elif lineage and isinstance(lineage, dict):
             kingdom = lineage.get('kingdom', 'Unknown')
-            
+        
         kingdom_counts[kingdom] = kingdom_counts.get(kingdom, 0) + 1
-    summary_list = [{"kingdom": key, "count": value} for key, value in kingdom_counts.items()]
-    return summary_list
+            
+    return [{"kingdom": key, "count": value} for key, value in kingdom_counts.items()]
 
-def format_json_response(status, metadata=None, predictions=None, input_summary=None, confidence_summary=None, abundance_summary=None, kingdom_summary=None, message=None):
-    response = {
-        "status": status,
-        "metadata": metadata or {},
-        "input_summary": input_summary or {},
-        "confidence_summary": confidence_summary or {},
-        "abundance_summary": abundance_summary or {},
-        "kingdom_summary": kingdom_summary or {},
-        "predictions": predictions or []
-    }
-    if message: response["message"] = message
+def format_json_response(status, **kwargs):
+    response = {"status": status}
+    if 'message' in kwargs:
+        response['message'] = kwargs.pop('message')
+    response.update({key: value or {} for key, value in kwargs.items()})
     return json.dumps(response, indent=4)
+
+
+loaded_pipeline = None
+blast_lookup_db = None
+
+
+try:
+    if not os.path.exists(PIPELINE_SAVE_PATH):
+        raise FileNotFoundError(f"Trained pipeline not found at '{PIPELINE_SAVE_PATH}'. Cannot start the service.")
+    
+    if not ENTREZ_EMAIL or "@" not in ENTREZ_EMAIL:
+        logging.warning("NCBI Entrez email not configured in .env file. API calls may be throttled.")
+        Entrez.email = "default.email@example.com"
+    else:
+        Entrez.email = ENTREZ_EMAIL
+
+    logging.info(f"Attempting to load EukaryoticPipeline from: {PIPELINE_SAVE_PATH}")
+    loaded_pipeline = EukaryoticPipeline.load_pipeline(PIPELINE_SAVE_PATH)
+    
+    logging.info(f"Attempting to build BLAST lookup from: {BLAST_RESULTS_PATH}")
+    blast_lookup_db = build_blast_lookup(BLAST_RESULTS_PATH)
+
+    logging.info("--- Initialization Complete. Ready for requests. ---")
+
+except Exception as e:
+    logging.critical(f"FATAL: A critical error occurred during initialization: {e}")
 
 
 def process_prediction_request(request_data: dict):
     if not loaded_pipeline:
-        return json.loads(format_json_response(status="error", message="Pipeline is not initialized. Check server logs for errors."))
+        return json.loads(format_json_response("error", message="Pipeline is not initialized. Check server logs for errors."))
 
     start_time = time.time()
     
     file_type = request_data.get("file_type")
     data = request_data.get("data")
-
     sequences_to_classify, error_msg = [], None
 
     if file_type == 'manual':
@@ -215,21 +224,17 @@ def process_prediction_request(request_data: dict):
                 sequences_to_classify.append(cleaned_sequence)
         else:
             error_msg = "For 'manual' file_type, 'data' must be a non-empty string."
-
+            
     elif file_type == 'file':
         if data and isinstance(data, str):
             sequences_to_classify, error_msg = read_sequences_from_file(data)
         else:
             error_msg = "For 'file' file_type, 'data' must be a string representing the file path."
-    
     else:
         error_msg = f"Invalid 'file_type': {file_type}. Must be 'manual' or 'file'."
 
-    if error_msg:
-        return json.loads(format_json_response(status="error", message=error_msg))
-    
-    if not sequences_to_classify:
-        return json.loads(format_json_response(status="success", message="No valid sequences were provided to classify."))
+    if error_msg: return json.loads(format_json_response("error", message=error_msg))
+    if not sequences_to_classify: return json.loads(format_json_response("success", message="No valid sequences were provided."))
 
     prediction_json = loaded_pipeline.predict(new_sequences=sequences_to_classify)
     prediction_list = json.loads(prediction_json)
@@ -251,36 +256,37 @@ def process_prediction_request(request_data: dict):
                 if best_hit:
                     taxid = best_hit.get('subject_taxid')
                     pred['taxonomic_lineage'] = get_taxonomy_from_taxid(taxid)
-                    pred['blast_hit'] = {
-                        "closest_relative": best_hit['subject_scientific_name'],
-                        "identity": f"{best_hit['percentage_identity']:.2f}%"
-                    }
-    
-    end_time = time.time()
-    
-    confidence_summary = calculate_confidence_summary(prediction_list)
-    abundance_summary = calculate_abundance_summary(prediction_list)
-    kingdom_summary = calculate_kingdom_summary(prediction_list)
+                    pred['blast_hit'] = {"closest_relative": best_hit['subject_scientific_name'], "identity": f"{best_hit['percentage_identity']:.2f}%"}
 
+    grouped_predictions = {}
+    for pred in prediction_list:
+        key = pred['final_taxonomy']
+        if key not in grouped_predictions:
+            grouped_predictions[key] = pred
+            grouped_predictions[key]['count'] = 1
+            grouped_predictions[key].pop('sequence', None)
+        else:
+            grouped_predictions[key]['count'] += 1
+    final_prediction_list = list(grouped_predictions.values())
+
+    end_time = time.time()
     metadata = {
         "timestamp": datetime.utcnow().isoformat() + "Z",
         "execution_time_seconds": round(end_time - start_time, 2),
         "model_source": PIPELINE_SAVE_PATH
     }
-
-    final_response_json_str = format_json_response(
+    final_response_str = format_json_response(
         status="success",
         metadata=metadata,
-        predictions=prediction_list,
+        predictions=final_prediction_list,
         input_summary={"sequences_provided": len(sequences_to_classify)},
-        confidence_summary=confidence_summary,
-        abundance_summary=abundance_summary,
-        kingdom_summary=kingdom_summary
+        confidence_summary=calculate_confidence_summary(prediction_list),
+        abundance_summary=calculate_abundance_summary(prediction_list),
+        kingdom_summary=calculate_kingdom_summary(prediction_list)
     )
-    
-    return json.loads(final_response_json_str)
+    return json.loads(final_response_str)
+
 
 if __name__ == "__main__":
-    print("This module is designed to be imported and used via API calls.")
-    print("Use process_prediction_request(request_data) function to process sequences.")
-
+    print("This module is designed to be imported and used by another script (e.g., a web server).")
+    print("Use process_prediction_request(request_data) to process sequences.")

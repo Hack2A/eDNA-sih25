@@ -27,6 +27,33 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 
 pipeline_bp = Blueprint('pipeline', __name__)
 
+# --- UserSummary method fix ---
+def update_summary(self, predictions: list):
+        """Update summary with predictions from pipeline result."""
+        # total_reports_generated is incremented by the number of predictions in this request
+        self.total_reports_generated += 1  # you could also sum sequence counts if you prefer
+
+        species_found = []
+        for pred in predictions:
+            final_taxonomy = pred.get("final_taxonomy")
+            count = pred.get("count", 1)  # default 1 if missing
+            if final_taxonomy:
+                # Add final_taxonomy count times to reflect sequences
+                species_found.extend([final_taxonomy] * count)
+
+                # mark unknowns/outliers as potential discoveries
+                if final_taxonomy.lower() in ["n/a", "unknown", "outlier"]:
+                    self.potential_discoveries += count
+
+        # total_species_found should reflect total number of sequences
+        self.total_species_found += len(species_found)
+
+        # update unique species
+        current = set(self.species_list or [])
+        new = set([pred.get("final_taxonomy") for pred in predictions if pred.get("final_taxonomy")])
+        updated = current.union(new)
+        self.species_list = list(updated)
+        self.unique_species_found = len(self.species_list)
 @pipeline_bp.route('/predict', methods=['POST'])
 @jwt_required()
 def predict():
@@ -70,7 +97,7 @@ def predict():
                     response = process_prediction_request(request_data)
                     response["user_id"] = user_id
 
-                    # Save result to PipelineResult
+                    # Save PipelineResult
                     result_entry = PipelineResult(
                         user_id=user_id,
                         result_json=response,
@@ -84,9 +111,9 @@ def predict():
                     if not summary:
                         summary = UserSummary(user_id=user_id, species_list=[])
                         db.session.add(summary)
-                        db.session.commit()  # Commit new summary
-
-                    summary.update_summary(response.get("predictions", []))
+                        db.session.commit()
+                    
+                    update_summary(summary, response.get("predictions", []))
                     db.session.commit()
 
                     return jsonify(response)
@@ -107,7 +134,7 @@ def predict():
                 response = process_prediction_request(request_data)
                 response["user_id"] = user_id
 
-                # Save result to PipelineResult
+                # Save PipelineResult
                 result_entry = PipelineResult(
                     user_id=user_id,
                     result_json=response,
@@ -122,14 +149,13 @@ def predict():
                     summary = UserSummary(user_id=user_id, species_list=[])
                     db.session.add(summary)
                     db.session.commit()
-
-                summary.update_summary(response.get("predictions", []))
+                
+                update_summary(summary, response.get("predictions", []))
                 db.session.commit()
 
                 return jsonify(response)
             else:
                 return jsonify({"status": "error", "message": "Invalid file_type. Must be 'file' or 'manual'"}), 400
-                
         else:
             # JSON input
             request_data = request.get_json()
@@ -139,7 +165,7 @@ def predict():
             response = process_prediction_request(request_data)
             response["user_id"] = user_id
 
-            # Save result to PipelineResult
+            # Save PipelineResult
             result_entry = PipelineResult(
                 user_id=user_id,
                 result_json=response,
@@ -154,12 +180,37 @@ def predict():
                 summary = UserSummary(user_id=user_id, species_list=[])
                 db.session.add(summary)
                 db.session.commit()
-
-            summary.update_summary(response.get("predictions", []))
+            
+            update_summary(summary, response.get("predictions", []))
             db.session.commit()
 
             return jsonify(response)
-            
+
     except Exception as e:
         db.session.rollback()
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+# --- Get pipeline result by ID ---
+@pipeline_bp.route("/pipeline/<int:result_id>", methods=["GET"])
+@jwt_required()
+def get_pipeline_result(result_id):
+    try:
+        pipeline_result = PipelineResult.query.filter_by(id=result_id).first()
+        if not pipeline_result:
+            return jsonify({
+                "status": "error",
+                "message": f"Pipeline result with id {result_id} not found"
+            }), 404
+
+        return jsonify({
+            "status": "success",
+            "pipeline_result": {
+                "id": pipeline_result.id,
+                "user_id": pipeline_result.user_id,
+                "result_json": pipeline_result.result_json,
+                "created_at": pipeline_result.created_at.isoformat()
+            }
+        })
+
+    except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
