@@ -381,21 +381,32 @@ const BriefOutputScreen = () => {
                         {/* Sample species grid - replace with real data later */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                             {dataRecord?.predictions && Array.isArray(dataRecord.predictions) && dataRecord.predictions.length > 0 ? (
-                                dataRecord.predictions.map((s: any, index: number) => (
-                                    <SpecieReportCard
-                                        key={s?.title || s?.final_taxonomy || `species-${index}`}
-                                        title={s?.final_taxonomy || 'Unknown Species'}
-                                        kingdom={s?.taxonomic_lineage?.kingdom || 'Unknown Kingdom'}
-                                        phylum={s?.taxonomic_lineage?.phylum || 'Unknown Phylum'}
-                                        count={s?.count || 0}
-                                        onViewDetails={() => {
-                                            console.log('====================================');
-                                            console.log("Sending the following data to details page", s);
-                                            console.log('====================================');
-                                            navigate(`/visual/${s?.final_taxonomy || 'unknown'}`, { state: { specieData: s, s: s } })
-                                        }}
-                                    />
-                                ))
+                                dataRecord.predictions.map((s: any, index: number) => {
+                                    // Check if this is an outlier (you can adjust the condition based on your outlier detection logic)
+                                    const isOutlier = s?.classification_type?.toLowerCase().includes('outlier') ||
+                                        s?.confidence < 0.5 ||
+                                        s?.taxonomic_lineage?.kingdom === 'Unknown' ||
+                                        !s?.taxonomic_lineage?.kingdom;
+
+                                    return (
+                                        <SpecieReportCard
+                                            key={s?.title || s?.final_taxonomy || `species-${index}`}
+                                            title={s?.final_taxonomy || 'Unknown Species'}
+                                            kingdom={isOutlier ? (s?.predicted_genus || 'Unknown Genus') : (s?.taxonomic_lineage?.kingdom || s?.predicted_genus || 'Unknown Kingdom')}
+                                            phylum={isOutlier ? undefined : (s?.taxonomic_lineage?.phylum || 'Unknown Phylum')}
+                                            kingdomLabel={isOutlier ? 'Predicted Genus' : 'Kingdom'}
+                                            phylumLabel={isOutlier ? 'Count' : 'Phylum'}
+                                            hidePhylum={isOutlier}
+                                            count={s?.count || 0}
+                                            onViewDetails={() => {
+                                                console.log('====================================');
+                                                console.log("Sending the following data to details page", s);
+                                                console.log('====================================');
+                                                navigate(`/visual/${s?.final_taxonomy || 'unknown'}`, { state: { specieData: s, s: s } })
+                                            }}
+                                        />
+                                    )
+                                })
                             ) : (
                                 <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
                                     <div className="text-gray-400 text-lg mb-2">No species data available</div>
