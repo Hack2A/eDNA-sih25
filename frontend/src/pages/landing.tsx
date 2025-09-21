@@ -1,5 +1,5 @@
 
-import heroBg from '../assets/stocks/hero-bg.png'
+import heroBg from '../assets/stocks/hero-bg.mp4'
 
 import b1 from '../assets/stocks/b1.png'
 import b2 from '../assets/stocks/b2.png'
@@ -69,11 +69,26 @@ const Landing = () => {
         <div className='w-full min-h-screen bg-[#131E24] text-white flex flex-col gap-10'>
             {/* Hero Section */}
             <section
-                className='relative w-full h-[60vh] flex flex-col justify-center items-center px-8 py-10 bg-cover bg-center bg-no-repeat rounded-lg'
-                style={{
-                    backgroundImage: `linear-gradient(rgba(19, 30, 36, 0.7), rgba(19, 30, 36, 0.7)), url(${heroBg})`,
-                }}
+                className='relative w-full h-[60vh] flex flex-col justify-center items-center px-8 py-10 overflow-hidden rounded-lg'
             >
+                {/* Background Video */}
+                <video
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className='absolute top-0 left-0 w-full h-full object-cover'
+                >
+                    <source src={heroBg} type='video/mp4' />
+                    Your browser does not support the video tag.
+                </video>
+
+                {/* Overlay to darken the video for text readability */}
+                <div
+                    className='absolute top-0 left-0 w-full h-full bg-[#131e24]/65'
+                ></div>
+
+                {/* Content */}
                 <div className='relative z-10 flex flex-col justify-center items-center h-full text-center space-y-8'>
                     <div className='max-w-4xl'>
                         <h1 className='text-4xl font-bold leading-tight mb-6'>

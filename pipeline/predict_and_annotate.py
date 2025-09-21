@@ -111,7 +111,6 @@ def read_sequences_from_file(filepath):
                 if current_sequence: sequences.append(current_sequence)
             logging.info(f"Successfully read {len(sequences)} sequences from FASTA file.")
             return sequences, None
-
         elif extension == '.csv':
             df = pd.read_csv(filepath, low_memory=False)
             if 'sequence' in df.columns:
@@ -124,16 +123,13 @@ def read_sequences_from_file(filepath):
                 return sequences, None
             else:
                 return None, f"Could not find a 'sequence' column in the CSV. Detected columns: {list(df.columns)}"
-        
         elif extension == '.txt':
             with open(filepath, 'r', encoding='utf-8') as f:
                 sequences = [line.strip() for line in f if line.strip()]
             logging.info(f"Successfully read {len(sequences)} sequences from TXT file.")
             return sequences, None
-        
         else:
             return None, f"Unsupported file extension: '{extension}'. Please use .fasta, .csv, or .txt."
-
     except FileNotFoundError:
         return None, f"File not found at '{filepath}'"
     except Exception as e:
@@ -278,6 +274,7 @@ def process_prediction_request(request_data: dict):
     final_response_str = format_json_response(
         status="success",
         metadata=metadata,
+        predictions=final_prediction_list,
         predictions=final_prediction_list,
         input_summary={"sequences_provided": len(sequences_to_classify)},
         confidence_summary=calculate_confidence_summary(prediction_list),
