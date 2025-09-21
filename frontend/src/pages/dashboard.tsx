@@ -3,6 +3,8 @@ import InfoCard from "../components/dashboard/info-card"
 import { dataRetrievalService } from "../services/dataRetreiveService"
 import ReportListItem from "../components/dashboard/report-list-item"
 import ReportListHeader from "../components/dashboard/report-list-header"
+import ReportsLineChart from "../components/dashboard/reports-line-chart"
+import SpeciesBarChart from "../components/dashboard/species-bar-chart"
 
 interface Report {
     id: number;
@@ -48,11 +50,9 @@ const Dashboard = () => {
             }
         };
 
-
         fetchSummary();
         fetchPastReports();
     }, [])
-
 
     return (
         <div className="w-[80%] flex flex-col justify-center mx-auto text-white my-10 gap-10">
@@ -74,12 +74,8 @@ const Dashboard = () => {
             <div className="flex flex-col">
                 <h1 className="text-xl font-bold mb-2">Report Visual</h1>
                 <div className="flex justify-between gap-6">
-                    <div className="w-1/3 h-96 bg-[#226FA1] p-6 rounded-lg flex flex-col text-white">
-                    </div>
-                    <div className="w-1/3 h-96 bg-[#226FA1] p-6 rounded-lg flex flex-col text-white">
-                    </div>
-                    <div className="w-1/3 h-96 bg-[#226FA1] p-6 rounded-lg flex flex-col text-white">
-                    </div>
+                    <ReportsLineChart pastReports={pastReports} />
+                    <SpeciesBarChart pastReports={pastReports} />
                 </div>
             </div>
 
