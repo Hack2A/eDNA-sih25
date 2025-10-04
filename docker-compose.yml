@@ -1,0 +1,54 @@
+version: "3.9"
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: vite-frontend
+    ports:
+      - "3000:80"
+    volumes:
+      - ./frontend:/app
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: .                     # Project root is build context
+      dockerfile: ./server/Dockerfile
+    container_name: flask-backend
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./server:/app/server
+      - ./pipeline:/app/pipeline
+    env_file:
+      - ./server/.env
+      - ./pipeline/.env
+    depends_on:
+      - db
+    networks:
+      - app-network
+
+  db:
+    image: mysql:8.0
+    container_name: mysql-db
+    restart: always
+    ports:
+      - "3307:3306"
+    env_file:
+      - ./server/.env
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - app-network
+
+volumes:
+  mysql-data:
+
+networks:
+  app-network:
+    driver: bridge
